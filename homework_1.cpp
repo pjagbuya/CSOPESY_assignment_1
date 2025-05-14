@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 using namespace std;
+#define ARR_SIZE 20
 
 void Push(string input, vector<string>& list, int mode, int i){
 	if(list.size() == 0){
@@ -165,12 +166,8 @@ int main() {
 	while(!is_command_quit){		
         Input(&input, &is_command_done);
 		CLI(&input, cli_list, &is_command_quit, &is_command_done, &is_command_clear);
-		console.ConsoleFill(marquee_list.size(), "Enter input: " + input);
-		console.ConsoleFill(marquee_list.size() + 1, cli_list.size(), cli_list);
-		if(is_command_clear){
-			console.ConsoleFlush(marquee_list.size());
-			is_command_clear = false;
-		}
+		console.ConsoleFill(0, "Enter input: " + input);
+		console.ConsoleFill(1, cli_list.size(), cli_list);
 		console.ConsoleOut();
 		Sleep(100);
 		i++;
