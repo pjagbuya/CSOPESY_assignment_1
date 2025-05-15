@@ -4,7 +4,9 @@
 #include <regex>
 #include <vector>
 #include <array>
+
 using namespace std;
+
 #define ARR_SIZE 20
 
 void Push(string input, vector<string>& list, int mode, int i){
