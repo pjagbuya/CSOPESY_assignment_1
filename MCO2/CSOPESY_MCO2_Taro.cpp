@@ -151,95 +151,99 @@ void Input(string* input, bool* is_command_done){
 	}
 }
 
-void CLI(int* speed, string* marquee_text, string* input, vector<string>& cli_list, bool* is_command_quit, bool* is_command_done, bool* is_command_clear) {
-	
-	regex and_regex(R"(and (\S+) (\S+))");
-    regex ping_regex(R"(ping)");
-    regex jarvis_regex(R"(jarvis)");
-    regex clive_regex(R"(clive)");
-    regex kenneth_regex(R"(kenneth)");
-    regex pranjeet_regex(R"(pranjeet (\d+))");
-    regex rinaldo_regex(R"(rinaldo (\d+) (\S+))");
-	regex text_regex(R"(text ([^>\n]+))");
-    regex speed_regex(R"(speed (\d+))");
-    regex clear_regex(R"(clear)");
-    regex quit_regex(R"(quit)");
-	smatch match;
+void Cli(string* input, int* action, bool* is_command_done, smatch& match){
+
+	vector<regex> command_list = {
+		//invalid								//-1
+		regex(R"(and (\S+) (\S+))"),			// 0
+		regex(R"(ping)"),						// 1
+		regex(R"(jarvis)"),						// 2
+		regex(R"(clive)"),						// 3
+		regex(R"(kenneth)"),					// 4
+		regex(R"(pranjeet (\d+))"),				// 5
+		regex(R"(rinaldo (\d+) (\S+))"),		// 6
+		regex(R"(text ([^>\n]+))"),				// 7
+		regex(R"(speed (\d+))"),				// 8
+		regex(R"(clear)"),						// 9
+		regex(R"(quit)")						// 10
+	};
+
+	bool is_valid = false;
 
 	if(*is_command_done){
-        if (regex_match(*input, match, and_regex)) 
-		{
-            Push((match[1].str() + " and " + match[2].str()), cli_list, 1, 0);
-        } 
-		else if (regex_match(*input, ping_regex)) 
-		{
-            Push("pong", cli_list, 1, 0);
-        } 
-		else if (regex_match(*input, jarvis_regex)) 
-		{
-            Push("Hit the Griddy", cli_list, 1, 0);
-        } 
-        else if (regex_match(*input, clive_regex)) 
-		{
-            Push("Clivetto Jarelini Angustino, Bombardiro Della Pesto Nuclearo", cli_list, 1, 0);
-        } 
-        else if (regex_match(*input, match, kenneth_regex)) 
-		{
-            Push("Skill Issue", cli_list, 1, 0);
-        } 
-        else if (regex_match(*input, match, pranjeet_regex)) 
-		{
-			string str = "";
-            for(int i = 0; i < stoi(match[1]); i++){
-            	str += "Uii";
-            	for(int j = 0; j < i; j++){
-            		str += "i";
-				}
-            	str += "ai ";
+		
+		for(int i = 0; i < command_list.size(); i++){
+			if(regex_match(*input, match, command_list[i])){
+				is_valid = true;
+				*action = i;
+				i = command_list.size(); 
 			}
-			Push(str, cli_list, 1, 0);
-        } 
-        else if (regex_match(*input, match, rinaldo_regex)) 
-		{
-			string str = "I am Rinaldo, I am hungry! ";
-            for(int i = 0; i < stoi(match[1]); i++){
-            	str += "Nom! ";
-            }
-            str += match[2].str() + "!";
-            Push(str, cli_list, 1, 0);
-        } 
-        else if (regex_match(*input, match, text_regex)) 
-		{
-            *marquee_text = match[1].str();
-            
-            Push("Changed text to " + *marquee_text, cli_list, 1, 0);
-        } 
-		else if (regex_match(*input, match, speed_regex)) 
-		{
-            *speed = stoi(match[1]);
-            
-            Push("Changed speed to " + to_string(*speed), cli_list, 1, 0);
-        } 
-        else if (regex_match(*input, clear_regex)) 
-		{
-			*is_command_clear = true; 
-			
-			cli_list.clear();
-            system("cls");
-        } 
-        else if (regex_match(*input, quit_regex)) 
-		{
-			*is_command_quit = true; 	
-				
-            Push("Goodbye", cli_list, 1, 0);
-        } 
-		else {
-            Push("Invalid Command Line", cli_list, 1, 0);
-        }
+		}
+		if(!is_valid){
+			*action = -1;
+		}
+        
         *input = "";
-        *is_command_done = false;
     }
 }
+
+void Interpreter(int action, vector<string>& cli_list, bool* is_command_quit, bool* is_command_clear, int* speed, string* marquee_text, smatch match) {
+
+	string str = "";
+
+	switch(action){
+		case 0: // and
+			Push(match[1].str() + " and " + match[2].str(), cli_list, 1, 0);
+			break;
+		case 1: // ping
+			Push("pong", cli_list, 1, 0);
+			break;
+		case 2: // jarvis
+			Push("Hit the Griddy", cli_list, 1, 0);
+			break;
+		case 3: // clive
+			Push("Clivetto Jarelini Angustino, Bombardiro Della Pesto Nuclearo", cli_list, 1, 0);
+			break;
+		case 4: // kenneth
+			Push("Skill Issue", cli_list, 1, 0);
+			break;
+		case 5: // pranjeet
+			for (int i = 0; i < stoi(match[1]); i++) {
+				str += "Uii" + string(i, 'i') + "ai ";
+			}
+			Push(str, cli_list, 1, 0);
+			break;
+		case 6: // rinaldo
+			str = "I am Rinaldo, I am hungry! ";
+			for (int i = 0; i < stoi(match[1]); i++) {
+				str += "Nom! ";
+			}
+			str += match[2].str() + "!";
+			Push(str, cli_list, 1, 0);
+			break;
+		case 7: // text
+			*marquee_text = match[1].str();
+			Push("Changed text to " + *marquee_text, cli_list, 1, 0);
+			break;
+		case 8: // speed
+			*speed = stoi(match[1]);
+			Push("Changed speed to " + to_string(*speed), cli_list, 1, 0);
+			break;
+		case 9: // clear
+			*is_command_clear = true;
+			break;
+		case 10: // quit
+			*is_command_quit = true;
+			Push("Goodbye", cli_list, 1, 0);
+			break;
+		case -1: // invalid
+			Push("Invalid Command Line", cli_list, 1, 0);
+			break;
+		default:
+			break;
+	}
+}
+
 
 int main() {
 
@@ -252,11 +256,14 @@ int main() {
 	
 	vector<string> marquee_list;
 	vector<string> cli_list;
+
+	int action;
 	
 	string input = "";
 	bool is_command_quit = false;
 	bool is_command_done = false;
 	bool is_command_clear = false;
+	smatch match;
 	
 	int i = 0; 
 	COORD console_size = console.GetSize();
@@ -264,14 +271,19 @@ int main() {
 	while(!is_command_quit){
 		Marquee(marquee_text, console_size.X, console_size.Y - 10, ref(marquee_pos), ref(marquee_dir), i, speed, marquee_list);
 		Input(&input, &is_command_done);
-		CLI(&speed, &marquee_text, &input, cli_list, &is_command_quit, &is_command_done, &is_command_clear);
+		Cli(&input, &action, &is_command_done, match);
+		if(is_command_done){
+			Interpreter(action, cli_list, &is_command_quit, &is_command_clear, &speed, &marquee_text, match);
+			is_command_done = false;
+			if(is_command_clear){
+				console.ConsoleFlush(marquee_list.size());
+				cli_list.clear();
+				is_command_clear = false;
+			}
+		}
 		console.ConsoleFill(0, marquee_list.size(), marquee_list);
 		console.ConsoleFill(marquee_list.size(), "Enter input: " + input);
 		console.ConsoleFill(marquee_list.size() + 1, cli_list.size(), cli_list);
-		if(is_command_clear){
-			console.ConsoleFlush(marquee_list.size());
-			is_command_clear = false;
-		}
 		console.ConsoleOut();
 		Sleep(50);
 		i++;
