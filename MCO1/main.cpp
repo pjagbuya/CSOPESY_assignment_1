@@ -37,7 +37,7 @@ void Cli(string* input, int* action, bool* is_command_done){
 		//invalid						//-1
 		(regex)"(initialize)", 			//0
 	    (regex)"(exit)", 				//1
-	    (regex)"(screen -s (\S+))",		//2
+	    (regex)"(screen -s (\\S+))",	//2
 	    (regex)"(screen -ls)",			//3
 	    (regex)"(scheduler-start)",		//4
 	    (regex)"(scheduler-stop)",		//5
