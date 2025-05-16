@@ -4,6 +4,7 @@
 #include <regex>
 #include <vector>
 #include <array>
+#include <ctime>
 using namespace std;
 #define ARR_SIZE 100
 
@@ -30,6 +31,34 @@ void Push(string input, vector<string>& list, int mode, int i){
 		}
 	}
 }
+
+class Screen {
+	private:
+		array<string, ARR_SIZE> output_list;
+		string name;
+		time_t time_now;
+
+	public:
+		Screen(string name){
+			this->name = name;
+			time_t timestamp;
+			time(&timestamp);
+			this->time_now = timestamp;
+		}
+		
+		void SetName(string name){
+			this->name = name;
+		}
+		
+		string GetName(){
+			return this->name;
+		}
+		
+		time_t GetTime(){
+			return this->time_now;
+		}
+
+};
 
 class Console {
 	private:
@@ -61,13 +90,30 @@ class Console {
 		}
 		
 		void ConsoleFill(int index, int count, vector<string> list){
-			for(int i = 0; i < count; i++){
-				this->output_list[index + i] = list[i];
+			if(index + count < ARR_SIZE){
+				for(int i = 0; i < count; i++){
+					this->output_list[index + i] = list[i];
+				}
+			}
+			else{
+				for(int i = 0; i < count; i++){
+					if(index + i < ARR_SIZE){
+						this->output_list[index + i] = list[i];
+					}
+					else{
+						this->output_list[ARR_SIZE - 1] = list[i];
+					}
+				}
 			}
 		}
 		
 		void ConsoleFill(int index, string input){
-			this->output_list[index] = input;
+			if(index < ARR_SIZE){
+				this->output_list[index] = input;
+			}
+			else{
+				this->output_list[ARR_SIZE - 1] = input;
+			}
 		}
 		
 		void ConsoleFlush(int index){
@@ -130,15 +176,10 @@ void Cli(string* input, int* action, bool* is_command_done){
 	
 	vector<regex> command_list = {
 		//invalid						//-1
-		(regex)"(initialize)", 			//0
+		(regex)"(clear)", 				//0
 	    (regex)"(exit)", 				//1
 	    (regex)"(screen -s (\\S+))",	//2
-	    (regex)"(screen -ls)",			//3
-	    (regex)"(scheduler-start)",		//4
-	    (regex)"(scheduler-stop)",		//5
-		(regex)"(report-util)",			//6
-	    (regex)"(ping)",				//7
-	    (regex)"(clear)"				//8
+	    (regex)"(screen -r (\\S+))",	//3
 	};
 
 	bool is_valid = false;
@@ -164,7 +205,7 @@ void Interpreter(int action, vector<string>& cli_list, bool* is_command_quit, bo
 	
 	switch(action){
 		case 0:
-			Push("Initialize command recognized. Doing something.", cli_list, 1, 0);
+			*is_command_clear = true;
 			break;
 		case 1:
 			Push("Goodbye", cli_list, 1, 0);
@@ -175,21 +216,6 @@ void Interpreter(int action, vector<string>& cli_list, bool* is_command_quit, bo
 			break;
 		case 3:
 			Push("Screen -ls command recognized. Doing something.", cli_list, 1, 0);
-			break;
-		case 4:
-			Push("Scheduler Start command recognized. Doing something.", cli_list, 1, 0);
-			break;
-		case 5:
-			Push("Scheduler Stop command recognized. Doing something.", cli_list, 1, 0);
-			break;
-		case 6:
-			Push("Report Utilization command recognized. Doing something.", cli_list, 1, 0);
-			break;
-		case 7:
-			Push("Ping", cli_list, 1, 0);
-			break;
-		case 8:
-			*is_command_clear = true;
 			break;
 		case -1:
 			Push("Invalid Command Line", cli_list, 1, 0);
