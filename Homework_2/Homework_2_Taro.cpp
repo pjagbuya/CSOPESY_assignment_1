@@ -34,16 +34,23 @@ void Push(string input, vector<string>& list, int mode, int i){
 
 class Screen {
 	private:
-		array<string, ARR_SIZE> output_list;
+		vector<string> output_list;
 		string name;
-		time_t time_now;
+		time_t time_created;
+		int max_height;
+		int max_width;
 
 	public:
-		Screen(string name){
+		Screen(string name, int max_height, int max_width){
 			this->name = name;
 			time_t timestamp;
 			time(&timestamp);
-			this->time_now = timestamp;
+			this->time_created = timestamp;
+			this->max_height = max_height;
+			this->max_width = max_width;
+			for(int i = 0; i < max_height; i++){
+				this->output_list.push_back(" ");
+			}
 		}
 		
 		void SetName(string name){
@@ -55,9 +62,68 @@ class Screen {
 		}
 		
 		time_t GetTime(){
-			return this->time_now;
+			return this->time_created;
 		}
 
+		vector<string> GetOutputList(){
+			return this->output_list;
+		}
+		
+		void SetLine(string str, int i){
+			this->output_list[i] = str;
+		}
+
+};
+
+class Header : public Screen {
+	public:
+		Header(string name, int max_height, int max_width) : Screen(name, max_height, max_width){
+			this->AssembleOutputList();
+		}
+		void AssembleOutputList(){
+			vector<string> header = {
+			"  _____  _____  ____  _____  ______  _______     __",
+			" / ____|/ ____|/ __ \\|  __ \\|  ____|/ ____\\ \\   / /",
+			"| |    | (___ | |  | | |__) | |__  | (___  \\ \\_/ / ",
+			"| |     \\___ \\| |  | |  ___/|  __|  \\___ \\  \\   /  ",
+			"| |____ ____) | |__| | |    | |____ ____) |  | |   ",
+			" \\_____|_____/ \\____/|_|    |______|_____/   |_|   ",
+			" Hello, Welcome to CSOPESY CommandLine!            ",
+			" Type 'exit' to quit, 'clear' to clear the screen  "
+			};
+			for(int i = 0; i < header.size(); i++){
+				this->SetLine(header[i], i);
+			}
+		}
+};
+
+class Process : public Screen {
+	public:
+		Process(string name, int max_height, int max_width) : Screen(name, max_height, max_width){
+			this->AssembleOutputList();
+		}
+		void AssembleOutputList(){
+			time_t time = this->GetTime();
+			char* time_str = ctime(&time);
+			
+			vector<string> header = {
+			"----------------------------------------",
+			"Screen Name: " + this->GetName(),
+			string("Screen Time: ") + time_str,
+			"----------------------------------------",
+			};
+			
+			for(int i = 0; i < header.size(); i++){
+				this->SetLine(header[i], i);
+			}
+		}
+};
+
+class Input : public Screen{
+	public:
+		Input(int max_width) : Screen("Input", 10, max_width){
+			
+		}
 };
 
 class Console {
@@ -66,6 +132,9 @@ class Console {
 		int max_height;
 		array<string, ARR_SIZE> output_list;
 		HANDLE h_console;
+		Input input;
+		vector<Screen> screen_list;
+		int screen_index;
 		
 	public:	
 		Console(){
@@ -74,6 +143,12 @@ class Console {
 		    GetConsoleScreenBufferInfo(h_console, &csbi);
 		    this->max_width = csbi.srWindow.Right;
 		    this->max_height = csbi.srWindow.Bottom;
+			this->screen_index = 0;
+			for(int i = 0; i < ARR_SIZE; i++){
+				this->output_list[i] = " ";
+			}
+			Header header("header", this->max_height, this->max_width);
+			this->screen_list.push_back(header);
 		} 
 		
 		void MoveCursorTo(COORD coord) {
@@ -87,33 +162,6 @@ class Console {
 		    GetConsoleScreenBufferInfo(this->h_console, &csbi);
 		    COORD line_start = { 0, csbi.dwCursorPosition.Y };
 		    FillConsoleOutputCharacter(this->h_console, ' ', csbi.dwSize.X, line_start, &count_written);
-		}
-		
-		void ConsoleFill(int index, int count, vector<string> list){
-			if(index + count < ARR_SIZE){
-				for(int i = 0; i < count; i++){
-					this->output_list[index + i] = list[i];
-				}
-			}
-			else{
-				for(int i = 0; i < count; i++){
-					if(index + i < ARR_SIZE){
-						this->output_list[index + i] = list[i];
-					}
-					else{
-						this->output_list[ARR_SIZE - 1] = list[i];
-					}
-				}
-			}
-		}
-		
-		void ConsoleFill(int index, string input){
-			if(index < ARR_SIZE){
-				this->output_list[index] = input;
-			}
-			else{
-				this->output_list[ARR_SIZE - 1] = input;
-			}
 		}
 		
 		void ConsoleFlush(int index){
@@ -145,8 +193,51 @@ class Console {
 			return {(short)max_width, (short)max_height};
 		}
 
+		int GetScreenIndex(){
+			return this->screen_index;
+		}
+
+		void SetScreenIndex(int index){
+			this->screen_index = index;
+		}
+
+		void SetScreenIndex(string name){
+			for(int i = 0; i < this->screen_list.size(); i++){
+				if(this->screen_list[i].GetName() == name){
+					this->screen_index = i;
+					break;
+				}
+			}
+		}
+		
 		void SetColor(int color) {
     		SetConsoleTextAttribute(this->h_console, color);
+		}
+
+		void CreateScreen(string name){
+			Screen screen(name, this->max_height, this->max_width);
+			this->screen_list.push_back(screen);
+		}
+
+		void CallScreen(string name){
+			for(int i = 0; i < this->screen_list.size(); i++){
+				if(this->screen_list[i].GetName() == name){
+					vector<string> output = this->screen_list[i].GetOutputList();
+					for(int i = 0; i < output.size(); i++){
+						this->output_list[i] = output[i];
+						this->screen_index = i;
+					}
+					break;
+				}
+			}
+		}
+
+		void ClearScreen(){
+			for(int i = 0; i < this->max_height; i++){
+				this->MoveCursorTo({0, (short)i});
+				this->ClearCurrentLine();
+				this->output_list[i] = " ";
+			}
 		}
 };
 
@@ -170,9 +261,7 @@ void Input(string* input, bool* is_command_done){
 	}
 }
 
-void Cli(string* input, int* action, bool* is_command_done){
-	
-	smatch match;
+void Cli(string* input, int* action, bool* is_command_done, smatch* match){
 	
 	vector<regex> command_list = {
 		//invalid						//-1
@@ -187,7 +276,7 @@ void Cli(string* input, int* action, bool* is_command_done){
 	if(*is_command_done){
 		
 		for(int i = 0; i < command_list.size(); i++){
-			if(regex_match(*input, match, command_list[i])){
+			if(regex_match(*input, *match, command_list[i])){
 				is_valid = true;
 				*action = i;
 				i = command_list.size(); 
@@ -201,21 +290,30 @@ void Cli(string* input, int* action, bool* is_command_done){
     }
 }
 
-void Interpreter(int action, vector<string>& cli_list, bool* is_command_quit, bool* is_command_clear){
+void Interpreter(int action, vector<string>& cli_list, smatch match, bool* is_command_quit, bool* is_command_clear, Console* console){
 	
 	switch(action){
 		case 0:
 			*is_command_clear = true;
 			break;
 		case 1:
-			Push("Goodbye", cli_list, 1, 0);
-			*is_command_quit = true;
+			if(console->GetScreenIndex() != 0){
+				Push("Exiting screen", cli_list, 1, 0);
+				console->CallScreen("Header");
+			}
+			else{
+				Push("Goodbye", cli_list, 1, 0);
+				*is_command_quit = true;
+			}
 			break;
 		case 2:
-			Push("Screen -s command recognized. Doing something.", cli_list, 1, 0);
+			Push("Creating screen " + match[0].str(), cli_list, 1, 0);
+			console->CreateScreen(match[1].str());
 			break;
 		case 3:
-			Push("Screen -ls command recognized. Doing something.", cli_list, 1, 0);
+			Push("Calling screen " + match[0].str(), cli_list, 1, 0);
+			console->ClearScreen();
+			console->CallScreen(match[1].str());
 			break;
 		case -1:
 			Push("Invalid Command Line", cli_list, 1, 0);
@@ -233,6 +331,8 @@ int main() {
 
 	int action;
 	
+	smatch match;
+
 	string input = "";
 	bool is_command_quit = false;
 	bool is_command_done = false;
@@ -240,17 +340,6 @@ int main() {
 	
 	int i = 0; 
 	COORD console_size = console.GetSize();
-
-	vector<string> header = {
-    "  _____  _____  ____  _____  ______  _______     __",
-    " / ____|/ ____|/ __ \\|  __ \\|  ____|/ ____\\ \\   / /",
-    "| |    | (___ | |  | | |__) | |__  | (___  \\ \\_/ / ",
-    "| |     \\___ \\| |  | |  ___/|  __|  \\___ \\  \\   /  ",
-    "| |____ ____) | |__| | |    | |____ ____) |  | |   ",
-    " \\_____|_____/ \\____/|_|    |______|_____/   |_|   ",
-    " Hello, Welcome to CSOPESY CommandLine!            ",
-    " Type 'exit' to quit, 'clear' to clear the screen  "
-	};
 
 	vector<int> color_map = { 
 		7, 7, 7, 7, 7, 7, 10, 14,
@@ -260,13 +349,12 @@ int main() {
 		7, 7, 7, 7, 7, 7, 7, 7,
 		7, 7, 7, 7, 7, 7, 7, 7,
 	};
-
 	
 	while(!is_command_quit){		
         Input(&input, &is_command_done);
-		Cli(&input, &action, &is_command_done);
+		Cli(&input, &action, &is_command_done, &match);
 		if(is_command_done){
-			Interpreter(action, cli_list, &is_command_quit, &is_command_clear);
+			Interpreter(action, cli_list, match, &is_command_quit, &is_command_clear, &console);
 			is_command_done = false;
 			if(is_command_clear){
 				console.ConsoleFlush(0);
@@ -274,7 +362,7 @@ int main() {
 				is_command_clear = false;
 			}
 		}
-		console.ConsoleFill(0, header.size(), header);
+		console.ConsoleFill(0, console size(), header);
 		console.ConsoleFill(header.size(), "Enter a command: " + input);
 		console.ConsoleFill(header.size() + 2, cli_list.size(), cli_list);
 		console.ConsoleOut(color_map);
