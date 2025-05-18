@@ -140,10 +140,10 @@ void Cli(string* input, int* action, bool* is_command_done){
 	    (regex)"(ping)",				//7
 	    (regex)"(clear)"				//8
 	};
-
-	bool is_valid = false;
 	
 	if(*is_command_done){
+
+		bool is_valid = false;
 		
 		for(int i = 0; i < command_list.size(); i++){
 			if(regex_match(*input, match, command_list[i])){
