@@ -8,11 +8,12 @@
 #include <memory>
 #include <string>
 using namespace std;
-#define ARR_SIZE 200
 #define SCREEN_CAPACITY 4
 
 #include "header.cpp"
 #include "input.cpp"
+
+void Debug(string message){ cout << message << endl; Sleep(50); }
 
 class Console {
 	private:
@@ -124,11 +125,11 @@ class Console {
 			}
 		}
 
-		void ConsoleOut(vector<int> color_map){
+		void ConsoleOut(int mode){
 			for(int i = 0; i < this->max_height; i++){
 				this->MoveCursorTo({0, (short)i});
 				this->ClearCurrentLine();
-				this->SetColor();
+				this->SetColor(this->color_map[i][0]);
 				cout << output_list[i] << "\n" << flush;
 			}
 		}
@@ -140,11 +141,11 @@ class Console {
 				if(this->screen_index[i] == -1){
 					if(this->screen_index[i] != index){
 						this->screen_index[i] = index;
+						return true;
 					}
 					else{
 						this->screen_list[0]->Push("Screen " + this->screen_list[index]->GetName() + " already shown");
 					}
-					return true;
 				}
 			}
 			return false;
@@ -197,8 +198,8 @@ class Console {
 			bool is_valid = false;
 			for(int i = 0; i < this->screen_list.size(); i++){
 				if(this->screen_list[i]->GetName() == name){
-					this->screen_index = i;
 					this->screen_list[0]->Push("Screen " + name + " called");
+					this->AddScreenIndex(i);
 					is_valid = true;
 				}
 			}
@@ -207,45 +208,112 @@ class Console {
 			}
 		}
 
-		void CallScreen(int index){
-			if(index == -1){
-				this->AddScreenIndex(index);
-			}
-			else{
-				if(index < this->screen_list.size()){
-					this->screen_index = index;
-					this->screen_list[0]->Push("Screen " + this->screen_list[index]->GetName() + " called");
+		void RemoveScreen(string name){
+			bool is_valid = false;
+			for(int i = 0; i < this->screen_list.size(); i++){
+				if(this->screen_list[i]->GetName() == name){
+					this->screen_list[0]->Push("Screen " + name + " removed");
+					this->RemoveScreenIndex(i);
+					is_valid = true;
 				}
+			}
+			if(!is_valid){
+				this->screen_list[0]->Push("Screen " + name + " not found");
 			}
 		}
 
+		string AssembleBorder(int size, int gap){
+			string line = "";
+			line += "|";
+			for(int i = 0; i < gap; i++){
+				line += " ";
+			}
+			line += "|";
+			for(int i = 0; i < size; i++){
+				line += "-";
+			}
+			line += "|";
+			for(int i = 0; i < gap; i++){
+				line += " ";
+			}
+			line += "|";
+			
+			return line;
+		}
+
+		string AssembleLine(vector<string> str, int size, int gap){
+			string line = "";
+			line += "|";
+			for(int i = 0; i < gap; i++){
+				line += " ";
+			}
+			line += "|";
+			for(int i = 0; i < str.size(); i++){
+				for(int j = 0 ; j < size; j++){
+					if(j < str[i].length()){
+						line += str[i][j];
+					}
+					else{
+						line += " ";
+					}
+				}
+				line += "|";
+				for(int i = 0; i < gap; i++){
+					line += " ";
+				}
+			}
+			line += "|";
+			
+			return line;
+		}
+
 		void AssembleScreenOutputList(){
-			if(this->screen_index != -1){
-                this->screen_list[this->screen_index].AssembleOutputList();
-                this->screen_list[0]->AssembleOutputList();
-                int i = 0;
-                for(auto str : this->screen_list[this->screen_index].GetOutputList()){
-                    this->output_list[i] = str;
-                    i++;
-                }
-                for(auto str : this->screen_list[0]->GetOutputList()){
-                    this->output_list[i] = str;
-                    i++;
-                }
-            }
-            else{
-                this->screen_list[1]->AssembleOutputList();
-                this->screen_list[0]->AssembleOutputList();
-                int i = 0;
-                for(auto str : this->screen_list[1]->GetOutputList()){
-                    this->output_list[i] = str;
-                    i++;
-                }
-                for(auto str : this->screen_list[0]->GetOutputList()){
-                    this->output_list[i] = str;
-                    i++;
-                }
-            }
+			string str_horizontal = "";
+			string str_vertical = "";
+
+			for(int i = 0; i < this->max_width; i++){
+				if(i == 0 || i == this->max_width - 1){
+					str_vertical += "|";
+					str_horizontal += "|";
+				}
+				else{
+					str_vertical += " ";
+					str_horizontal += "-";
+				}
+			}
+
+			Debug("test");
+
+			this->screen_list[0]->AssembleOutputList();
+
+			Debug("test");
+			this->screen_list[1]->AssembleOutputList();
+
+			Debug("test");
+			for(int i = 0; i < this->screen_index.size(); i++){
+				Debug("test");
+				if(this->screen_index[i] != -1){
+					this->screen_list[this->screen_index[i]]->AssembleOutputList();
+				}
+			}
+
+			Debug("test");
+
+			this->output_list[0] = str_horizontal;
+			this->output_list[1] = str_vertical;
+			for(int i = 2; i < this->max_height - 2; i++){
+				if(i < this->screen_list[1]->GetOutputList().size() + 2){
+					if(i == 2 || i == this->screen_list[1]->GetOutputList().size() + 2){
+						this->output_list[i] = this->AssembleBorder(this->max_width - 10, 5);
+					}
+					else{
+						this->output_list[i] = this->AssembleLine({this->screen_list[1]->GetOutputList()[i - 2]}, this->max_width - 10, 5);
+					}
+				}
+			}
+			this->output_list[this->max_height - 2] = str_vertical;
+			this->output_list[this->max_height - 1] = str_horizontal;
+
 		}
 
 		void ClearScreen(){

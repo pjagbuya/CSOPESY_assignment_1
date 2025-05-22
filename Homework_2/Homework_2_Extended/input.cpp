@@ -10,9 +10,9 @@
 using namespace std;
 #define ARR_SIZE 100
 
-#include "screen.cpp"
+#include "screen.h"
 
-class Input : public Screen{
+class Input : public Screen {
 	private:
 		string input;
 		bool is_command_done;

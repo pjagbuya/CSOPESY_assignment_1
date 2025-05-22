@@ -8,9 +8,8 @@
 #include <memory>
 #include <string>
 using namespace std;
-#define ARR_SIZE 100
 
-#include "screen.cpp"
+#include "screen.h"
 
 class Header : public Screen {
 	public:

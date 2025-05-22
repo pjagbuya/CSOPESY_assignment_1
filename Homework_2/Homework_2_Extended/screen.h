@@ -10,6 +10,9 @@
 using namespace std;
 #define ARR_SIZE 100
 
+#ifndef SCREEN_H
+#define SCREEN_H
+
 class Screen {
 	private:
 		vector<string> output_list;
@@ -70,10 +73,8 @@ class Screen {
 			char* time_str = ctime(&time);
 			
 			vector<string> header = {
-			"----------------------------------------",
 			"Screen Name: " + this->GetName(),
 			string("Screen Time: ") + time_str,
-			"----------------------------------------",
 			};
 			
 			for(int i = 0; i < header.size(); i++){
@@ -116,6 +117,7 @@ class Screen {
 		virtual void KeyInput() {}
 		virtual void Decoder(smatch* match, int* action) {}
 		virtual void Push(string input) {}
-		virtual void AssembleOutputList() {}
 
 };
+
+#endif // SCREEN_H
