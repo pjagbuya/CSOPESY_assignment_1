@@ -20,6 +20,7 @@ class Screen {
 		time_t time_created;
 		int max_height;
 		int max_width;
+		int output_size;
 
 	public:
 		Screen(string name, int max_height, int max_width){
@@ -64,6 +65,9 @@ class Screen {
 		void SetMaxWidth(int max_width){ this->max_width = max_width; }
 		int GetMaxWidth(){ return this->max_width; }
 
+		void SetOutputSize(int output_size){ this->output_size = output_size; }
+		int GetOutputSize(){ return this->output_size; }
+
 		void SetLine(string str, int i){
 			this->output_list[i] = str;
 		}
@@ -71,15 +75,20 @@ class Screen {
 		virtual void AssembleOutputList() {
 			time_t time = this->GetTimeCreated();
 			char* time_str = ctime(&time);
+			string time_string(time_str);
 			
 			vector<string> header = {
 			"Screen Name: " + this->GetName(),
-			string("Screen Time: ") + time_str,
+			//"Screen Time: " + time_string,
+			"Screen displaying... Type screen -r to remove",
+			"Time Size: " + to_string(time_string.length())
 			};
 			
 			for(int i = 0; i < header.size(); i++){
 				this->SetLine(header[i], i);
 			}
+
+			this->output_size = header.size();
 		}
 
 		void ClearOutputList(){

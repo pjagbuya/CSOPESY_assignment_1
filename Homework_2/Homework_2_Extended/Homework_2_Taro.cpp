@@ -18,6 +18,8 @@ int main() {
     ShowWindow(hwnd, SW_MAXIMIZE); 
 	
 	Console console;	
+
+	console.Initialize();
 	
 	while(!console.GetCommandQuit()){		
         console.Run();

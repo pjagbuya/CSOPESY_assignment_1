@@ -30,15 +30,15 @@ class Input : public Screen {
 			this->suggest_key = 0;
             this->suggest_command = {
                 "",
-                "screen -r ",
                 "screen -d ",
+                "screen -r ",
             };
 
 			vector<string> suggestions_0 = {
 				"",
 				"screen -s",
-				"screen -r",
-                "screen -d",
+				"screen -d",
+                "screen -r",
 				"clear",
 				"exit",
 			};
@@ -181,9 +181,10 @@ class Input : public Screen {
 
 		void AssembleOutputList() override {
             this->SetLine("Enter command: " + this->input, 0);
-            this->SetLine("--------------------------------------------------------------", 1);
 			for(int i = 0; i < this->cli_list.size(); i++){
-				this->SetLine(this->cli_list[i], i + 2);
+				this->SetLine(this->cli_list[i], i + 1);
 			}
+
+			this->SetOutputSize(this->cli_list.size() + 1);
 		}
 };

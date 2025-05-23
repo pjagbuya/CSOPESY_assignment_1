@@ -30,5 +30,7 @@ class Header : public Screen {
 			for(int i = 0; i < header.size(); i++){
 				this->SetLine(header[i], i);
 			}
+
+			this->SetOutputSize(header.size());
 		}
 };

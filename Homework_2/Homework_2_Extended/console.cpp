@@ -13,7 +13,7 @@ using namespace std;
 #include "header.cpp"
 #include "input.cpp"
 
-void Debug(string message){ cout << message << endl; Sleep(50); }
+void Debug(string message){ cout << message << "\n" << flush; Sleep(10); }
 
 class Console {
 	private:
@@ -188,8 +188,7 @@ class Console {
 				}
 			}
 			shared_ptr<Screen> screen = make_shared<Screen>(name, this->max_height - 15, this->max_width);
-			this->screen_list.push_back(screen);
-			this->screen_list[this->screen_list.size()-1]->Initialize();
+			this->screen_list.push_back(screen);			this->screen_list[this->screen_list.size()-1]->Initialize();
 			this->screen_list[0]->Push("Screen " + name + " created");
 			this->screen_list[0]->AddSuggestList(1, name);
 		}
@@ -222,33 +221,37 @@ class Console {
 			}
 		}
 
-		string AssembleBorder(int size, int gap){
+		string AssembleBorder(int count, int gap){
+			int size = (this->max_width - gap - count * (gap + 2) - 2) / count;
 			string line = "";
 			line += "|";
 			for(int i = 0; i < gap; i++){
 				line += " ";
 			}
-			line += "|";
-			for(int i = 0; i < size; i++){
-				line += "-";
-			}
-			line += "|";
-			for(int i = 0; i < gap; i++){
-				line += " ";
+			for(int i = 0; i < count; i++){
+				line += "+";
+				for(int j = 0; j < size; j++){
+					line += "-";
+				}
+				line += "+";
+				for(int j = 0; j < gap; j++){
+					line += " ";
+				}
 			}
 			line += "|";
 			
 			return line;
 		}
 
-		string AssembleLine(vector<string> str, int size, int gap){
+		string AssembleLine(vector<string> str, int gap){
+			int size = (this->max_width - gap - str.size() * (gap + 2) - 2) / str.size();
 			string line = "";
 			line += "|";
 			for(int i = 0; i < gap; i++){
 				line += " ";
 			}
-			line += "|";
 			for(int i = 0; i < str.size(); i++){
+				line += "|";
 				for(int j = 0 ; j < size; j++){
 					if(j < str[i].length()){
 						line += str[i][j];
@@ -274,7 +277,7 @@ class Console {
 			for(int i = 0; i < this->max_width; i++){
 				if(i == 0 || i == this->max_width - 1){
 					str_vertical += "|";
-					str_horizontal += "|";
+					str_horizontal += "+";
 				}
 				else{
 					str_vertical += " ";
@@ -282,33 +285,94 @@ class Console {
 				}
 			}
 
-			Debug("test");
-
 			this->screen_list[0]->AssembleOutputList();
-
-			Debug("test");
 			this->screen_list[1]->AssembleOutputList();
-
-			Debug("test");
 			for(int i = 0; i < this->screen_index.size(); i++){
-				Debug("test");
 				if(this->screen_index[i] != -1){
 					this->screen_list[this->screen_index[i]]->AssembleOutputList();
 				}
 			}
 
-			Debug("test");
-
 			this->output_list[0] = str_horizontal;
 			this->output_list[1] = str_vertical;
+
+			int j = 0; 
+
 			for(int i = 2; i < this->max_height - 2; i++){
-				if(i < this->screen_list[1]->GetOutputList().size() + 2){
-					if(i == 2 || i == this->screen_list[1]->GetOutputList().size() + 2){
-						this->output_list[i] = this->AssembleBorder(this->max_width - 10, 5);
+				j++;
+				if(i < this->screen_list[1]->GetOutputSize() + 4){
+					if(i == 2 || i == this->screen_list[1]->GetOutputSize() + 3){
+						j = 0;
+						this->output_list[i] = this->AssembleBorder(1, 4);
 					}
 					else{
-						this->output_list[i] = this->AssembleLine({this->screen_list[1]->GetOutputList()[i - 2]}, this->max_width - 10, 5);
+						this->output_list[i] = this->AssembleLine({this->screen_list[1]->GetOutputList()[j-1]}, 4);
 					}
+				}
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2){
+					this->output_list[i] = str_vertical;
+				}
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7){
+					if(i == this->screen_list[1]->GetOutputSize() + 6 || i == this->screen_list[1]->GetOutputSize() + 6 + 6){
+						j = 0;
+						this->output_list[i] = this->AssembleBorder(2, 4);
+					}
+					else{
+						if(this->screen_index[0] != -1){
+							if(this->screen_index[1] != -1){
+								this->output_list[i] = this->AssembleLine({this->screen_list[this->screen_index[0]]->GetOutputList()[j-1], this->screen_list[this->screen_index[1]]->GetOutputList()[j-1]}, 4);
+							}
+							else{
+								this->output_list[i] = this->AssembleLine({this->screen_list[this->screen_index[0]]->GetOutputList()[j-1], ""}, 4);
+							}
+						}
+						else if(this->screen_index[1] != -1){
+							this->output_list[i] = this->AssembleLine({"", this->screen_list[this->screen_index[1]]->GetOutputList()[j-1]}, 5);
+						}
+						else{
+							this->output_list[i] = this->AssembleLine({"", ""}, 4);
+						}
+					}
+				}
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2){
+					this->output_list[i] = str_vertical;
+				}
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2 + 7){
+					if(i == this->screen_list[1]->GetOutputSize() + 15 || i == this->screen_list[1]->GetOutputSize() + 15 + 6){
+						j = 0;
+						this->output_list[i] = this->AssembleBorder(2, 4);
+					}
+					else{
+						if(this->screen_index[2] != -1){
+							if(this->screen_index[3] != -1){
+								this->output_list[i] = this->AssembleLine({this->screen_list[this->screen_index[2]]->GetOutputList()[j-1], this->screen_list[this->screen_index[3]]->GetOutputList()[j-1]}, 4);
+							}
+							else{
+								this->output_list[i] = this->AssembleLine({this->screen_list[this->screen_index[2]]->GetOutputList()[j-1], ""}, 4);
+							}
+						}
+						else if(this->screen_index[1] != -1){
+							this->output_list[i] = this->AssembleLine({"", this->screen_list[this->screen_index[3]]->GetOutputList()[j-1]}, 5);
+						}
+						else{
+							this->output_list[i] = this->AssembleLine({"", ""}, 4);
+						}
+					}
+				}
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2 + 7 + 2){
+					this->output_list[i] = str_vertical;
+				}
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2 + 7 + 2 + 15){
+					if(i == this->screen_list[1]->GetOutputSize() + 24 || i == this->screen_list[1]->GetOutputSize() + 24 + 14){
+						j = 0;
+						this->output_list[i] = this->AssembleBorder(1, 4);
+					}
+					else{
+						this->output_list[i] = this->AssembleLine({this->screen_list[0]->GetOutputList()[j-1]}, 4);
+					}
+				}
+				else{
+					this->output_list[i] = str_vertical;
 				}
 			}
 			this->output_list[this->max_height - 2] = str_vertical;
@@ -347,6 +411,11 @@ class Console {
 					this->ClearScreen();
 					this->CallScreen(this->match[2].str());
 					break;
+				case 4:
+					this->screen_list[0]->Push("Removing screen " + this->match[2].str());
+					this->ClearScreen();
+					this->RemoveScreen(this->match[2].str());
+					break;
 				case -1:
 					this->screen_list[0]->Push("Invalid Command Line");
 					break;
@@ -363,6 +432,14 @@ class Console {
 				this->screen_list[0]->SetCommandDone(false);
 				action = -2; 
 			}
+		}
+
+		void Initialize(){
+			this->screen_list[0]->Initialize();
+			this->screen_list[1]->Initialize();
+			this->screen_list[0]->SetCommandDone(false);
+			this->screen_list[0]->SetInput("");
+			Sleep(1000);
 		}
 
 		void Run(){
