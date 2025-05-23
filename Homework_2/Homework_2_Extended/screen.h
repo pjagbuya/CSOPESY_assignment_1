@@ -122,6 +122,7 @@ class Screen {
 
 		virtual void ClearCliList() {}
 		virtual void AddSuggestList(int index, string suggest) {}
+		virtual void RemoveSuggestList(int index, string suggest) {}
 
 		virtual void KeyInput() {}
 		virtual void Decoder(smatch* match, int* action) {}

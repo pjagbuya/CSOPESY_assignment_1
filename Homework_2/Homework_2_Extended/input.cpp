@@ -17,6 +17,7 @@ class Input : public Screen {
 		string input;
 		bool is_command_done;
 		vector<string> cli_list;
+		int cli_index;
         vector<string> suggest_command;
 		int suggest_index;
 		int suggest_key;
@@ -26,6 +27,7 @@ class Input : public Screen {
 		Input(int max_height, int max_width) : Screen("Input", max_height, max_width){
 			this->input = "";
 			this->is_command_done = false;
+			this->cli_index = 0;
 			this->suggest_index = -1;	
 			this->suggest_key = 0;
             this->suggest_command = {
@@ -35,12 +37,13 @@ class Input : public Screen {
             };
 
 			vector<string> suggestions_0 = {
-				"",
+				"ping",
 				"screen -s",
 				"screen -d",
                 "screen -r",
 				"clear",
 				"exit",
+				"",
 			};
 
 			vector<string> suggestions_1 = {
@@ -82,31 +85,44 @@ class Input : public Screen {
 
 		// Other Methods
 
-        void ClearCliList() override { this->cli_list.clear(); }
-		void AddSuggestList(int index, string suggest) override { this->suggest_list[index].push_back(suggest); }
+        void ClearCliList() override { this->cli_list.clear(); this->cli_index = 0; }
+		void AddSuggestList(int index, string suggest) override { 
+			this->suggest_list[index].push_back(suggest);
+		}
+		void RemoveSuggestList(int index, string suggest) {
+			auto it = find(this->suggest_list[index].begin(), this->suggest_list[index].end(), suggest);
+			if (it != this->suggest_list[index].end()) {
+				this->suggest_list[index].erase(it);
+			}
+		}
 
         // CLI Methods
+
+		void Suggest(){
+			if(this->suggest_index == -1){
+				for(int i = 0; i < this->suggest_command.size(); i++){
+					if(this->input == this->suggest_command[i]){
+						this->suggest_index = i;
+						this->suggest_key = 0;
+						this->input = this->suggest_command[this->suggest_index] + this->suggest_list[this->suggest_index][this->suggest_key];
+					}
+				}
+			}
+			else{
+				this->suggest_key++;
+				if(this->suggest_key >= this->suggest_list[this->suggest_index].size()){
+					this->suggest_key = 0;
+				}
+				this->input = this->suggest_command[this->suggest_index] + this->suggest_list[this->suggest_index][this->suggest_key];
+			}
+		}
 
 		void KeyInput() override {
 	
 			if(_kbhit()){
 				char key = _getch();
                 if(key == '\t') {
-                    if(this->suggest_index == -1){
-                        for(int i = 0; i < this->suggest_command.size(); i++){
-                            if(this->input == this->suggest_command[i]){
-                                this->suggest_index = i;
-                                this->suggest_key = 0;
-                            }
-                        }
-                    }
-                    else{
-                        this->suggest_key++;
-                        if(this->suggest_key >= this->suggest_list[this->suggest_index].size()){
-                            this->suggest_key = 0;
-                        }
-                        this->input = this->suggest_command[this->suggest_index] + this->suggest_list[this->suggest_index][this->suggest_key];
-                    }
+                    this->Suggest();
                 }
                 else{
                     this->suggest_index = -1;
@@ -133,7 +149,8 @@ class Input : public Screen {
 				(regex)"(exit)", 				//1
 				(regex)"(screen -s (\\S+))",	//2
 				(regex)"(screen -d (\\S+))",	//3
-                (regex)"(screen -r (\\S+))",	//3
+                (regex)"(screen -r (\\S+))",	//4
+				(regex)"(ping)",				//5
 			};
 
 			bool is_valid = false;
@@ -161,19 +178,24 @@ class Input : public Screen {
 			}
 			else{
 				if(input == "Invalid Command Line"){
-					if(this->cli_list[this->cli_list.size()-1] == "Invalid Command Line"){
-						this->cli_list[this->cli_list.size()-1] = input;
+					if(this->cli_list[this->cli_list.size() - 1] == "Invalid Command Line"){
+						this->cli_list[this->cli_list.size() - 1] = input;
 					}
 					else{
 						this->cli_list.push_back(input);
 					}
 				}
 				else{
-					if(this->cli_list.size() >= this->GetMaxHeight()){
-						this->cli_list[this->cli_list.size()-1] = input;
+					if(this->cli_list[this->cli_list.size() - 1] != "Invalid Command Line"){
+						if(this->cli_list.size() >= this->GetMaxHeight() - 1){
+							this->cli_list[this->cli_list.size() - 1] = input;
+						}
+						else{
+							this->cli_list.push_back(input);
+						}
 					}
 					else{
-						this->cli_list.push_back(input);
+						this->cli_list[this->cli_list.size() - 1] = input;
 					}
 				}
 			}

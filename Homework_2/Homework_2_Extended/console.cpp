@@ -9,6 +9,7 @@
 #include <string>
 using namespace std;
 #define SCREEN_CAPACITY 4
+#define CLI_CAPACITY 11
 
 #include "header.cpp"
 #include "input.cpp"
@@ -46,10 +47,10 @@ class Console {
 				this->output_list[i] = " ";
 			}
 
-			shared_ptr<Input> input = make_shared<Input>(15, this->max_width);
+			shared_ptr<Input> input = make_shared<Input>(CLI_CAPACITY, this->max_width);
 			this->screen_list.push_back(input);
 
-			shared_ptr<Header> header = make_shared<Header>(this->max_height - 15, this->max_width);
+			shared_ptr<Header> header = make_shared<Header>(this->max_height, this->max_width);
 			this->screen_list.push_back(header);
 
 			this->screen_index = {-1, -1, -1, -1};
@@ -136,19 +137,38 @@ class Console {
 
 		//Screen Commands
 
-		bool AddScreenIndex(int index){
+		bool CheckScreenIndexIfExist(int index){
 			for(int i = 0; i < SCREEN_CAPACITY; i++){
-				if(this->screen_index[i] == -1){
-					if(this->screen_index[i] != index){
-						this->screen_index[i] = index;
-						return true;
-					}
-					else{
-						this->screen_list[0]->Push("Screen " + this->screen_list[index]->GetName() + " already shown");
-					}
+				if(this->screen_index[i] == index){
+					return true;
 				}
 			}
 			return false;
+		}
+
+		bool CheckScreenIndexIfFull(){
+			int count = 0;
+			for(int i = 0; i < SCREEN_CAPACITY; i++){
+				if(this->screen_index[i] != -1){
+					count += 1;	
+				}
+			}
+			return count == SCREEN_CAPACITY;
+		}
+
+		bool AddScreenIndex(int index){
+			if(!this->CheckScreenIndexIfExist(index)){
+				for(int i = 0; i < SCREEN_CAPACITY; i++){
+					if(this->screen_index[i] == -1){
+						this->screen_index[i] = index;
+						this->screen_list[0]->Push("Screen " + this->screen_list[index]->GetName() + " shown");
+						return true;
+					}
+				}
+			}
+			this->screen_list[0]->Push("Screen " + this->screen_list[index]->GetName() + " already shown");
+			return false;
+
 		}
 
 		bool ReplaceScreenIndex(int old_index, int new_index){
@@ -187,8 +207,9 @@ class Console {
 					return;
 				}
 			}
-			shared_ptr<Screen> screen = make_shared<Screen>(name, this->max_height - 15, this->max_width);
-			this->screen_list.push_back(screen);			this->screen_list[this->screen_list.size()-1]->Initialize();
+			shared_ptr<Screen> screen = make_shared<Screen>(name, this->max_height, this->max_width);
+			this->screen_list.push_back(screen);			
+			this->screen_list[this->screen_list.size()-1]->Initialize();
 			this->screen_list[0]->Push("Screen " + name + " created");
 			this->screen_list[0]->AddSuggestList(1, name);
 		}
@@ -198,7 +219,15 @@ class Console {
 			for(int i = 0; i < this->screen_list.size(); i++){
 				if(this->screen_list[i]->GetName() == name){
 					this->screen_list[0]->Push("Screen " + name + " called");
-					this->AddScreenIndex(i);
+					if(this->CheckScreenIndexIfFull()){
+						this->screen_list[0]->Push("Screen list is full, do screen -r first");
+					}
+					else{
+						if(this->AddScreenIndex(i)){
+							this->screen_list[0]->AddSuggestList(2, name);
+							this->screen_list[0]->RemoveSuggestList(1, name);
+						}
+					}
 					is_valid = true;
 				}
 			}
@@ -218,6 +247,10 @@ class Console {
 			}
 			if(!is_valid){
 				this->screen_list[0]->Push("Screen " + name + " not found");
+			}
+			else{
+				this->screen_list[0]->AddSuggestList(1, name);
+				this->screen_list[0]->RemoveSuggestList(2, name);
 			}
 		}
 
@@ -351,7 +384,7 @@ class Console {
 								this->output_list[i] = this->AssembleLine({this->screen_list[this->screen_index[2]]->GetOutputList()[j-1], ""}, 4);
 							}
 						}
-						else if(this->screen_index[1] != -1){
+						else if(this->screen_index[3] != -1){
 							this->output_list[i] = this->AssembleLine({"", this->screen_list[this->screen_index[3]]->GetOutputList()[j-1]}, 5);
 						}
 						else{
@@ -362,8 +395,8 @@ class Console {
 				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2 + 7 + 2){
 					this->output_list[i] = str_vertical;
 				}
-				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2 + 7 + 2 + 15){
-					if(i == this->screen_list[1]->GetOutputSize() + 24 || i == this->screen_list[1]->GetOutputSize() + 24 + 14){
+				else if(i < this->screen_list[1]->GetOutputSize() + 4 + 2 + 7 + 2 + 7 + 2 + CLI_CAPACITY){
+					if(i == this->screen_list[1]->GetOutputSize() + 24 || i == this->screen_list[1]->GetOutputSize() + 24 + CLI_CAPACITY - 1){
 						j = 0;
 						this->output_list[i] = this->AssembleBorder(1, 4);
 					}
@@ -415,6 +448,9 @@ class Console {
 					this->screen_list[0]->Push("Removing screen " + this->match[2].str());
 					this->ClearScreen();
 					this->RemoveScreen(this->match[2].str());
+					break;
+				case 5:
+					this->screen_list[0]->Push("Pong");
 					break;
 				case -1:
 					this->screen_list[0]->Push("Invalid Command Line");
