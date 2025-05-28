@@ -21,6 +21,8 @@ class Screen {
 		int max_height;
 		int max_width;
 		int output_size;
+		int current_line;
+		int max_line;
 
 	public:
 		Screen(string name, int max_height, int max_width){
@@ -30,6 +32,9 @@ class Screen {
 			this->time_created = timestamp;
 			this->max_height = max_height;
 			this->max_width = max_width;
+			this->output_size = 0;
+			this->current_line = 0;
+			this->max_line = 1000;
 		}
 
 		void Initialize(){
@@ -76,12 +81,12 @@ class Screen {
 			time_t time = this->GetTimeCreated();
 			char* time_str = ctime(&time);
 			string time_string(time_str);
+			time_string.erase(time_string.length() - 1);
 			
 			vector<string> header = {
 			"Screen Name: " + this->GetName(),
-			//"Screen Time: " + time_string,
-			"Screen displaying... Type screen -r to remove",
-			"Time Size: " + to_string(time_string.length())
+			"Line: " + to_string(this->current_line) + "/" + to_string(this->max_line),
+			"Screen Time: " + time_string,
 			};
 			
 			for(int i = 0; i < header.size(); i++){
