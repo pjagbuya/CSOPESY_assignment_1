@@ -478,8 +478,15 @@ class Console {
 			Sleep(1000);
 		}
 
+		void ProcessRun(){
+			for(int i = 0; i < this->screen_list.size(); i++){
+				this->screen_list[i]->Run();
+			}
+		}
+
 		void Run(){
 			this->ConsoleInput();
+			this->ProcessRun();
 			this->AssembleScreenOutputList();
 			this->ConsoleOut();
 			this->clock_cycle++;

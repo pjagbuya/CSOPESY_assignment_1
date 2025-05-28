@@ -34,7 +34,7 @@ class Screen {
 			this->max_width = max_width;
 			this->output_size = 0;
 			this->current_line = 0;
-			this->max_line = 1000;
+			this->max_line = 1000000;
 		}
 
 		void Initialize(){
@@ -102,6 +102,12 @@ class Screen {
 			}
 		}
 		
+		void Run(){
+			if(this->current_line < this->max_line){
+				this->current_line++;
+			}
+		}
+
 		// input.cpp
 		virtual void SetInput(string input) {}
 		virtual string GetInput() {}
