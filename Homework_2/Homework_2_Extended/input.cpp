@@ -40,6 +40,7 @@ class Input : public Screen {
 				"ping",
 				"screen -s",
 				"screen -d",
+				"screen -c",
                 "screen -r",
 				"clear",
 				"exit",
@@ -149,8 +150,9 @@ class Input : public Screen {
 				(regex)"(exit)", 				//1
 				(regex)"(screen -s (\\S+))",	//2
 				(regex)"(screen -d (\\S+))",	//3
-                (regex)"(screen -r (\\S+))",	//4
-				(regex)"(ping)",				//5
+				(regex)"(screen -c (\\S+))",	//4
+                (regex)"(screen -r (\\S+))",	//5
+				(regex)"(ping)",				//6
 			};
 
 			bool is_valid = false;

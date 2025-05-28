@@ -28,6 +28,8 @@ class Console {
 		vector<shared_ptr<Screen>> screen_list;
 		array<int, SCREEN_CAPACITY> screen_index;
 
+		int current_screen_index;
+
 		smatch match;
 		int action;
 		bool is_command_quit;	
@@ -54,6 +56,7 @@ class Console {
 			this->screen_list.push_back(header);
 
 			this->screen_index = {-1, -1, -1, -1};
+			this->current_screen_index = -1;
 			this->action = -2;
 			this->is_command_quit = false;
 			this->clock_cycle = 0;
@@ -236,19 +239,37 @@ class Console {
 			}
 		}
 
-		void RemoveScreen(string name){
+		void ControlScreen(string name){
 			bool is_valid = false;
-			for(int i = 0; i < this->screen_list.size(); i++){
-				if(this->screen_list[i]->GetName() == name){
-					this->screen_list[0]->Push("Screen " + name + " removed");
-					this->RemoveScreenIndex(i);
-					is_valid = true;
+			for(int i = 0; i < this->screen_index.size(); i++){
+				if(this->screen_index[i] != -1){
+					if(this->screen_list[this->screen_index[i]]->GetName() == name){
+						this->screen_list[0]->Push("Screen " + name + " controlled");
+						this->current_screen_index = i;
+						is_valid = true;
+					}
 				}
 			}
 			if(!is_valid){
 				this->screen_list[0]->Push("Screen " + name + " not found");
 			}
-			else{
+
+		}
+
+		void RemoveScreen(string name){
+			bool is_valid = false;
+			for(int i = 0; i < this->screen_list.size(); i++){
+				if(this->screen_list[i]->GetName() == name){
+					this->screen_list[0]->Push("Screen " + name + " removed");
+					if(this->RemoveScreenIndex(i)){
+						is_valid = true;
+					}
+					else{
+						this->screen_list[0]->Push("Screen " + name + " not shown");
+					}
+				}
+			}
+			if(is_valid){
 				this->screen_list[0]->AddSuggestList(1, name);
 				this->screen_list[0]->RemoveSuggestList(2, name);
 			}
@@ -445,11 +466,16 @@ class Console {
 					this->CallScreen(this->match[2].str());
 					break;
 				case 4:
+					this->screen_list[0]->Push("Controlling screen " + this->match[2].str());
+					this->ClearScreen();
+					this->ControlScreen(this->match[2].str());
+					break;
+				case 5:
 					this->screen_list[0]->Push("Removing screen " + this->match[2].str());
 					this->ClearScreen();
 					this->RemoveScreen(this->match[2].str());
 					break;
-				case 5:
+				case 6:
 					this->screen_list[0]->Push("Pong");
 					break;
 				case -1:
@@ -478,8 +504,25 @@ class Console {
 			Sleep(1000);
 		}
 
+		void RunProcesses(){
+			for(int i = 0; i < this->screen_list.size(); i++){
+				this->screen_list[i]->Run();
+			}
+		}
+
 		void Run(){
-			this->ConsoleInput();
+			if(this->current_screen_index == -1){
+				this->ConsoleInput();
+			}
+			else{
+				this->screen_list[this->current_screen_index]->KeyInput();
+				this->screen_list[this->current_screen_index]->Decoder();
+				if(this->screen_list[this->current_screen_index]->GetIsCommandQuit()){
+					this->screen_list[this->current_screen_index]->SetIsCommandQuit(false);
+					this->current_screen_index = -1;
+				}
+			}
+			this->RunProcesses();
 			this->AssembleScreenOutputList();
 			this->ConsoleOut();
 			this->clock_cycle++;
