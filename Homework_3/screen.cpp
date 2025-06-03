@@ -52,6 +52,7 @@ class Screen {
 			char* time_str = ctime(&timestamp);
 			string time_string(time_str);
 			time_string.erase(time_string.length() - 1);
+			return time_string;
 		}
 
 		virtual void AssembleOutputList() {
