@@ -16,7 +16,15 @@ int main() {
 
 	HWND hwnd = GetConsoleWindow();
     ShowWindow(hwnd, SW_MAXIMIZE); 
+
+    int time = 0;
 	
-	
+	Scheduler scheduler = Scheduler();
+    scheduler.Initialize();
+    scheduler.Import();
+    while(!scheduler.IsFinished()){
+        scheduler.Run(time);
+        time++;
+    }
     return 0;
 }

@@ -10,13 +10,15 @@ using namespace std;
 
 class ReadyQueue {
     private:
+        int id;
         vector<Process> processes; 
         string algorithm;
         int quantum_time;
         int priority_level;
 
     public:
-        ReadyQueue(string algorithm, int quantum_time, int priority_level) {
+        ReadyQueue(int id, string algorithm, int quantum_time, int priority_level) {
+            this->id = id;
             this->algorithm = algorithm;
             this->quantum_time = quantum_time;
             this->priority_level = priority_level;
@@ -32,6 +34,31 @@ class ReadyQueue {
         void SetPriorityLevel(int priority_level) { this->priority_level = priority_level; }
 
         void AddProcess(Process process) {
-            processes.push_back(process);
+            this->processes.push_back(process);
+        }
+
+        Process FetchProcess(int index){
+            if(index < this->processes.size()){
+                return this->processes[index];
+            }
+        }
+
+        Process RemoveProcess(int index){
+            auto it = find(this->processes.begin(), this->processes.end(), this->processes[index]);
+			if (it != this->processes.end()) {
+				this->processes.erase(it);
+			}
+        }
+
+        int GetProcessBurstTime(int index){
+            if(index < this->processes.size()){
+                return this->processes[index].GetBurstTime();
+            }
+        }
+
+        int GetProcessPriority(int index){
+            if(index < this->processes.size()){
+                return this->processes[index].GetPriority();
+            }
         }
 };

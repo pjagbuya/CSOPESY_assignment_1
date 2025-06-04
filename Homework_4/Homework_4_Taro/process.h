@@ -1,10 +1,17 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <conio.h>
 #include <windows.h>
 #include <regex>
 #include <vector>
 #include <array>
 using namespace std;
+
+#include "screen.h"
+
+#ifndef PROCESS_H
+#define PROCESS_H
 
 class Process{
 	private:
@@ -20,11 +27,13 @@ class Process{
 		int priority;
 		int current_burst_time;
 
+		Screen screen;
+
 		vector<string> logs;
 		string print_str;
 
 	public:
-		Process(string name, int arrival_time, int burst_time, int priority, string print_str){
+		Process(string name, int arrival_time, int burst_time, int priority, string print_str) : screen(name, 100000){
 			this->name = name;
 			this->status = "New";
 			this->arrival_time = arrival_time;
@@ -86,7 +95,8 @@ class Process{
 
 		void RunProcess(int core_id){
 			this->current_burst_time--;
-			this->logs.push_back("(" + this->GetTime() + ") Core:" + to_string(core_id) + ' "' + print_str + '"');
+			this->logs.push_back("(" + this->GetTime() + ") Core:" + to_string(core_id) + "\"" + print_str + "\"");
+			this->screen.Run(this->print_str);
 		}
 
 		void HaltProcess(){
@@ -99,10 +109,40 @@ class Process{
 			this->turnaround_time = this->completion_time - this->arrival_time;
 			this->waiting_time = this->turnaround_time - this->burst_time;
 			this->response_time = this->start_time - this->arrival_time;
+			this->WriteLogs();
 		}
 
 		bool IsProcessFinished() {
 			return this->status == "Finished";
 		}
 
+		void WriteLogs(){
+			ofstream file("output/" + this->name + ".txt");
+
+			file << "--------------------------------------------------------" << "\n";
+
+			file << "Process: " << this->name << "\n";
+
+			file << "--------------------------------------------------------" << "\n";
+
+			for(auto log : logs){
+				file << log << "\n";
+			}
+
+			file << "--------------------------------------------------------" << "\n";
+
+			file << "Arrival Time: " << this->arrival_time << "\n";
+			file << "Burst Time: " << this->burst_time << "\n";
+			file << "Completion Time: " << this->completion_time << "\n";
+			file << "Turnaround Time: " << this->turnaround_time << "\n";
+			file << "Waiting Time: " << this->waiting_time << "\n";
+			file << "Start Time: " << this->start_time << "\n";
+			file << "Response Time: " << this->response_time << "\n";
+			file << "Priority: " << this->priority << "\n";
+
+			file.close();
+		}
+
 };
+
+#endif // PROCESS_H

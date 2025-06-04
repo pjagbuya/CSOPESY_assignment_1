@@ -1,0 +1,9 @@
+Algo: MLFQ
+Type: Common
+Core: 4
+Queue: 3
+MaxP: 5
+
+Queue 0: RR 16
+Queue 1: RR 8
+Queue 2: FCFS 0
