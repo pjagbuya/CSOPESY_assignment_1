@@ -12,6 +12,8 @@ using namespace std;
 int main() {
 	
 	Console console;	
+
+	console.Initialize();
 	
 	while(true){	
 		console.Run();

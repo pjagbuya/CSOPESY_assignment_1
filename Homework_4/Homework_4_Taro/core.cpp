@@ -14,7 +14,7 @@ class Core{
         Process process;
 
     public:
-        Core(int id) : process("", 0, 0, 0, ""){
+        Core(int id) : process("", -1, 0, 0, 0, ""){
             this->id = id;
         }
 

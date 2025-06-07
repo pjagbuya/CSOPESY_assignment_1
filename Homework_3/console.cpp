@@ -53,6 +53,9 @@ class Console {
 
 			this->max_width = csbi.srWindow.Right;
 		    this->max_height = csbi.srWindow.Bottom;
+
+			this->screen.SetMaxWidth(this->max_width);
+			this->screen.SetMaxHeight(this->max_height);
 		}
 
 		void MoveCursorTo(COORD coord) { SetConsoleCursorPosition(this->h_console, coord); }
@@ -89,7 +92,9 @@ class Console {
 		// Screen Commands
 
 		void AssembleScreenOutputList(){
-			
+			for(int i = 0; i < this->screen.GetOutputList().size(); i++){
+				this->output_list[i] = this->screen.GetOutputList()[i];
+			}
 		}
 
 		void ClearScreen(){
@@ -100,7 +105,13 @@ class Console {
 			}
 		}
 
+		void Initialize(){
+			this->screen.Initialize();
+			this->SetConsoleSize();
+		}
+
 		void Run(){
+			this->screen.AssembleOutputList();
 			this->AssembleScreenOutputList();
 			this->ConsoleOut();
 		}

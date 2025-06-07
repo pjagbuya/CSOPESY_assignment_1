@@ -24,6 +24,8 @@ class ReadyQueue {
             this->priority_level = priority_level;
         }
 
+        int GetID(){ return this->id; }
+        void SetID( int id ){ this->id = id; }
         vector<Process> GetProcesses() { return processes; }
         void SetProcesses(vector<Process> processes) { this->processes = processes; }
         string GetAlgorithm() { return algorithm; }

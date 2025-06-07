@@ -97,17 +97,27 @@ class Scheduler{
 
 		void Import() {
 			this->initial_queue = {
-				Process("P1", 0, 5, 2, "A"),
-				Process("P2", 1, 3, 1, "B"),
-				Process("P3", 2, 8, 3, "C"),
-				Process("P4", 3, 6, 2, "D"),
-				Process("P5", 4, 2, 4, "E"),
-				Process("P6", 5, 4, 1, "F"),
-				Process("P7", 6, 7, 2, "G"),
-				Process("P8", 7, 1, 5, "H"),
-				Process("P9", 8, 9, 3, "I"),
-				Process("P10", 9, 2, 2, "J")
+				Process("P0", 0, 0, 5, 2, "A"),
+				Process("P1", 1, 1, 3, 1, "B"),
+				Process("P2", 2, 9, 8, 3, "C"),
+				Process("P3", 3, 3, 6, 2, "D"),
+				Process("P4", 4, 5, 2, 4, "E"),
+				Process("P5", 5, 5, 4, 1, "F"),
+				Process("P6", 6, 2, 7, 2, "G"),
+				Process("P7", 7, 1, 1, 5, "H"),
+				Process("P8", 8, 9, 9, 3, "I"),
+				Process("P9", 9, 6, 2, 2, "J")
 			};
+		}
+
+		void RemoveProcessFromInitial(int process_id) {
+			initial_queue.erase(
+				remove_if(initial_queue.begin(), initial_queue.end(),
+					[process_id](Process process) {
+						return process.GetID() == process_id;
+					}),
+				initial_queue.end()
+			);
 		}
 
 		void Insert(int current_time){
@@ -123,16 +133,24 @@ class Scheduler{
 			}
 		}
 
-		void Arrive(Process process, int index){
-			this->ready_queues[index].AddProcess(process);
+		void Arrive(Process process, int ready_queue_id){
+			this->ready_queues[ready_queue_id].AddProcess(process);
 		}
 
 		bool IsFinished(){
 			return false;
 		}
 
-		void ContextSwitch(int core_id, int ready_queue_id, int process_id){
-			
+		void AssignProcess(int core_id, int ready_queue_id, int process_id, int current_time){
+			this->cores[core_id].SetProcess(this->ready_queues[ready_queue_id].FetchProcess(process_id));
+			this->cores[core_id].GetProcess().StartProcess(current_time);
+			this->ready_queues[ready_queue_id].RemoveProcess(process_id);
+		}
+
+		void ContextSwitch(int core_id, int ready_queue_id, int process_id, int current_time){
+			this->cores[core_id].GetProcess().HaltProcess();
+			this->ready_queues[ready_queue_id].AddProcess(this->cores[core_id].GetProcess());
+			this->AssignProcess(core_id, ready_queue_id, process_id, current_time);
 		}
 
 		void FirstComeFirstServe(int cores, int core_id, int ready_queue_id, int current_time){

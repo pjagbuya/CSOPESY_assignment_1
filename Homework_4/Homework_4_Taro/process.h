@@ -16,6 +16,7 @@ using namespace std;
 class Process{
 	private:
 		string name;
+		int id;
 		string status;
 		int arrival_time;
 		int burst_time;
@@ -33,8 +34,9 @@ class Process{
 		string print_str;
 
 	public:
-		Process(string name, int arrival_time, int burst_time, int priority, string print_str) : screen(name, 100000){
+		Process(string name, int id, int arrival_time, int burst_time, int priority, string print_str) : screen(name, 100000){
 			this->name = name;
+			this->id = id;
 			this->status = "New";
 			this->arrival_time = arrival_time;
 			this->burst_time = burst_time;
@@ -50,6 +52,8 @@ class Process{
 
 		string GetName(){ return name; }
 		void SetName(string name){ this->name = name; }
+		int GetID(){ return this->id; }
+        void SetID( int id ){ this->id = id; }
 		string GetStatus(){ return status; }
 		void SetStatus(string status){ this->status = status; }
 		int GetArrivalTime(){ return arrival_time; }
@@ -89,8 +93,13 @@ class Process{
 		}
 
 		void StartProcess(int current_time){
-			this->status = "Running";
-			this->start_time = current_time;
+			if(this->status == "Blocked"){
+				this->status = "Running";
+			}
+			else{
+				this->status = "Running";
+				this->start_time = current_time;
+			}
 		}
 
 		void RunProcess(int core_id){

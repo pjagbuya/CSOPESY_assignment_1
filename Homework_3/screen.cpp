@@ -23,9 +23,8 @@ class Screen {
 		}
 
 		void Initialize(){
-			this->output_list.resize(this->max_height);
 			for(int i = 0; i < this->max_height; i++){
-				this->output_list[i] = " ";
+				this->output_list.push_back(" ");
 			}
 			this->AssembleOutputList();
 		}
@@ -43,7 +42,10 @@ class Screen {
 		int GetMaxWidth(){ return this->max_width; }
 
 		void SetLine(string str, int i){
-			this->output_list[i] = str;
+			
+			if(i < this->max_height){
+				this->output_list[i] = str;
+			}
 		}
 
 		string GetTime(){
@@ -55,44 +57,64 @@ class Screen {
 			return time_string;
 		}
 
-		virtual void AssembleOutputList() {
+		void AssembleOutputList() {
+
 			string time_string = this->GetTime();
 
-			vector<string> header = {
-				"NVIDIA-SMI 551.86",
-				"Driver Version: 551.86",
-				"CUDA Version: 12.4",
+			vector<string> nvidia_smi_output = {
+				"+-----------------------------------------------------------------------------------------+",
+				"| NVIDIA-SMI 560.94                 Driver Version: 560.94         CUDA Version: 12.6     |",
+				"|-----------------------------------------+------------------------+----------------------+",
+				"| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |",
+				"| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |",
+				"|                                         |                        |               MIG M. |",
+				"|=========================================+========================+======================|",
+				"|   0  NVIDIA GeForce GTX 1660 ...  WDDM  |   00000000:01:00.0  On |                  N/A |",
+				"| 40%   45C    P8             13W /  125W |     921MiB /   6144MiB |      6%      Default |",
+				"|                                         |                        |                  N/A |",
+				"+-----------------------------------------+------------------------+----------------------+",
+				"",
+				"+-----------------------------------------------------------------------------------------+",
+				"| Processes:                                                                              |",
+				"|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |",
+				"|        ID   ID                                                               Usage      |",
+				"|=========================================================================================|",
 			};
 
-			vector<vector<string>> details_header = {
-				{"GPU", "Name", "Persistence-M", "Bus-Id", "Disp.A", "Volatile Uncorr. ECC",},
-				{"Fan", "Temp", "Perf", "Pwr:Usage/Cap", "Memory-Usage", "GPU-Util", "Compute M.", "MIG M.",},
-			};
+			string process_start = "|    0   N/A  N/A      3380    C+G   ";
+			string process_end = "      N/A      |";
 
-			vector<vector<string>> details = {
-				{"0", "GeForce RTX 6090", "WDDM", "00000000:01:00.0", "On", "N/A"},
-				{"30%", "40C", "P8", "10W / 450W", "0 YiB / 8192 YiB", "0%", "Default", "N/A"},
-			};
-
-			vector<vector<string>> process_header = {
-				{"Processes:"},
-				{"GPU", "GI ID", "CI ID", "PID", "Type", "Process name", "GPU Memory Usage"},
-			};
-
-			vector<vector<string>> processes = {
-				{"0", "N/A", "N/A", "1234", "C+G", "test.exe", "N/A"},
-				{"0", "N/A", "N/A", "5678", "C+G", "iloveyou.exe", "N/A"},
-				{"0", "N/A", "N/A", "1357", "C+G", "trojan.exe", "N/A"},
-				{"0", "N/A", "N/A", "2468", "C+G", "mydoom.exe", "N/A"},
-				{"0", "N/A", "N/A", "4321", "C+G", "dlsu.exe", "N/A"},
-				{"0", "N/A", "N/A", "8765", "C+G", "freemoney.exe", "N/A"},
+			vector<string> processes = {
+				"C:\\Windows\\User\\Users\\Desktop\\Folder1\\Folder2\\test.exe", "C:\\Windows\\System32\\iloveyou.exe", "C:\\Windows\\User\\Users\\Desktop\\Folder1\\Folder2\\Folder3\\Folder4\\trojan.exe", "C:\\Windows\\System32\\mydoom.exe", "C:\\Windows\\System32\\dlsu.exe", "C:\\Windows\\System32\\freemoney.exe"
 			};
 
 			vector<string> output;
+
+			output.push_back(time_string);
+
+			for(string str : nvidia_smi_output){
+				output.push_back(str);
+			}
+
+			for(string process : processes){
+				string process_final = process_start;
+				 if (process.size() >= 39) {
+					process_final += "...";
+					process_final += process.substr(process.length() - 35);
+				} else {
+					process_final += process;
+					for(int i = process.size(); i < 38; i++){
+						process_final += " ";
+					}
+				}
+				process_final += process_end;
+				output.push_back(process_final);
+			}
+
+			output.push_back(nvidia_smi_output[0]);
 			
-			
-			for(int i = 0; i < header.size(); i++){
-				this->SetLine(header[i], i);
+			for(int i = 0; i < output.size(); i++){
+				this->SetLine(output[i], i);
 			}
 		}
 
