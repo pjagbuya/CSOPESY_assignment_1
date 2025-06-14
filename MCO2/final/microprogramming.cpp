@@ -345,7 +345,7 @@ class Microprogramming{
 			if (!IsValidHex(input)){
 				return false;
 			}
-			uint32_t value = stoul(input.substr(2), nullptr, 16);
+			int value = stoul(input.substr(2), nullptr, 16);
 			return value <= 0x000000FF;
 		}
 
@@ -467,9 +467,6 @@ class Microprogramming{
                 }
                 else if(instruction == "END"){
                     this->ClearMicrocode();
-                }
-                else {
-                    this->RCX = "0xFFFFFFFF"; // Invalid instruction
                 }
         }
 

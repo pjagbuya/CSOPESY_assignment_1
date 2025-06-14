@@ -77,7 +77,6 @@ class Input : public Screen {
 						is_valid = true;
 						*action = i;
 						i = command_list.size(); 
-						this->is_command_done = false;
 					}
 				}
 				if(!is_valid){
@@ -85,6 +84,7 @@ class Input : public Screen {
 				}
 				
 				this->input = "";
+				this->is_command_done = false;
 			}
 		}
 

@@ -91,26 +91,6 @@ class Screen {
 		virtual void SetCommandDone(bool is_command_done) {}
 		virtual bool GetCommandDone() {}
 
-		virtual void SetCliList(vector<string> cli_list) {}
-		virtual vector<string> GetCliList() {}
-
-		virtual void SetSuggestCommand(vector<string> suggest_command) {}
-		virtual vector<string> GetSuggestCommand() {}
-
-		virtual void SetSuggestIndex(int suggest_index) {}
-		virtual int GetSuggestIndex() {}
-
-		virtual void SetSuggestKey(int suggest_key) {}
-		virtual int GetSuggestKey() {}
-
-		virtual void SetSuggestList(vector<vector<string>> suggest_list) {}
-		virtual void SetSuggestList(int index, vector<string> suggest_list) {}
-		virtual vector<vector<string>> GetSuggestList() {}
-
-		virtual void ClearCliList() {}
-		virtual void AddSuggestList(int index, string suggest) {}
-		virtual void RemoveSuggestList(int index, string suggest) {}
-
 		virtual void KeyInput() {}
 		virtual void Decoder(smatch* match, int* action) {}
 		virtual void Push(string input) {}

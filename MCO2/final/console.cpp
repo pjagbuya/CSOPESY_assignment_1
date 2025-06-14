@@ -23,7 +23,6 @@ class Console {
 		int max_height;
 
 		array<string, ARR_SIZE> output_list;
-		vector<vector<int>> color_map;
 		Input input;
 		Microprogramming microprogramming;
 		int action;
@@ -44,13 +43,6 @@ class Console {
 		    this->max_height = csbi.srWindow.Bottom;
 			for(int i = 0; i < ARR_SIZE; i++){
 				this->output_list[i] = " ";
-			}
-
-			for(int i = 0; i < this->max_height; i++){
-				this->color_map.push_back({});
-				for(int j = 0; j < this->max_width; j++){
-					this->color_map[i].push_back(7);
-				}
 			}
 
 			this->input = input;
@@ -76,9 +68,6 @@ class Console {
 
 		void SetOutputList(array<string, ARR_SIZE> output_list){ this->output_list = output_list; }
 		array<string, ARR_SIZE> GetOutputList(){ return this->output_list; }
-
-		void SetColorMap(vector<vector<int>> color_map){ this->color_map = color_map; }
-		vector<vector<int>> GetColorMap(){ return this->color_map; }
 
 		void SetInput(Input input){ this->input = input; }
 		Input GetInput(){ return this->input; }
@@ -116,9 +105,6 @@ class Console {
 				this->MoveCursorTo({0, (short)i});
 				this->ClearCurrentLine();
 				this->output_list[i] = " ";
-				for(int j = 0; j < this->color_map[i].size(); j++){
-					this->color_map[i][j] = 7;
-				}
 			}
 		}
 
@@ -174,7 +160,7 @@ class Console {
 			if (!IsValidHex(input)){
 				return false;
 			}
-			uint32_t value = stoul(input.substr(2), nullptr, 16);
+			int value = stoul(input.substr(2), nullptr, 16);
 			return value <= 0x000000FF;
 		}
 
@@ -197,16 +183,14 @@ class Console {
 			}
 			return false;
 		}
-
-
-
+		
 		// Actual CLI Methods
 
 		void Interpreter(){
 
 			switch(this->action){
 				case 0:
-                    this->input.ClearCliList();
+                    this->input.Push("");
 					this->input.ClearOutputList();
 					this->input.Push("Clearing screen");
 					break;
