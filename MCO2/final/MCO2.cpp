@@ -23,7 +23,7 @@ int main() {
 	
 	while(!console.GetCommandQuit()){		
         console.Run();
-		Sleep(50);
+		Sleep(10);
 	}
 	
     return 0;

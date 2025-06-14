@@ -83,13 +83,6 @@ class Screen {
 				this->output_list[i] = " ";
 			}
 		}
-		
-		void Run(string print_str){
-			if(this->current_line < this->max_line){
-				this->print_list.push_back(print_str);
-				this->current_line++;
-			}
-		}
 
 		// input.cpp
 		virtual void SetInput(string input) {}

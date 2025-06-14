@@ -26,11 +26,12 @@ class Console {
 		vector<vector<int>> color_map;
 		Input input;
 		Microprogramming microprogramming;
-		int screen_index;
 		int action;
 		bool is_command_quit;	
 
 		int clock_cycle;
+
+		smatch match;
 		
 	public:	
 		Console(): input(CLI_CAPACITY), microprogramming(){
@@ -53,8 +54,6 @@ class Console {
 			}
 
 			this->input = input;
-			
-			this->screen_index = 0;
 
 			this->action = -2;
 			this->is_command_quit = false;
@@ -86,9 +85,6 @@ class Console {
 
 		void SetMicroprogramming(Microprogramming microprogramming){ this->microprogramming = microprogramming; }
 		Microprogramming GetMicroprogramming(){ return this->microprogramming; }
-
-		void SetScreenIndex(int screen_index){ this->screen_index = screen_index; }
-		int GetScreenIndex(){ return this->screen_index; }
 
 		void SetAction(int action){ this->action = action; }
 		int GetAction(){ return this->action; }
@@ -135,60 +131,19 @@ class Console {
 		}
 
 		//Screen Commands
-		string AssembleBorder(int count, int gap){
-			int size = (this->max_width - gap - count * (gap + 2) - 2) / count;
-			string line = "";
-			line += "|";
-			for(int i = 0; i < gap; i++){
-				line += " ";
-			}
-			for(int i = 0; i < count; i++){
-				line += "+";
-				for(int j = 0; j < size; j++){
-					line += "-";
-				}
-				line += "+";
-				for(int j = 0; j < gap; j++){
-					line += " ";
-				}
-			}
-			line += "|";
-			
-			return line;
-		}
-
-		string AssembleLine(vector<string> str, int gap){
-			int size = (this->max_width - gap - str.size() * (gap + 2) - 2) / str.size();
-			string line = "";
-			line += "|";
-			for(int i = 0; i < gap; i++){
-				line += " ";
-			}
-			for(int i = 0; i < str.size(); i++){
-				line += "|";
-				for(int j = 0 ; j < size; j++){
-					if(j < str[i].length()){
-						line += str[i][j];
-					}
-					else{
-						line += " ";
-					}
-				}
-				line += "|";
-				for(int i = 0; i < gap; i++){
-					line += " ";
-				}
-			}
-			line += "|";
-			
-			return line;
-		}
-
-		void AssembleScreenColorList(){
-
-		}
 
 		void AssembleScreenOutputList(){
+			int buffer = this->microprogramming.GetOutputList().size();
+			int max_size = this->output_list.size();
+
+			// Copy microprogramming output
+			for(int i = 0; i < this->microprogramming.GetOutputList().size() && i < max_size; i++){
+				this->output_list[i] = this->microprogramming.GetOutputList()[i];
+			}
+			// Copy input output, but don't go out of bounds
+			for(int i = 0; i < this->input.GetOutputList().size() && (i + buffer) < max_size; i++){
+				this->output_list[i + buffer] = this->input.GetOutputList()[i];
+			}
 		}
 
 		void ClearScreen(){
@@ -199,6 +154,377 @@ class Console {
 			}
 		}
 
+		bool IsValidRegister(string input){
+			if(input == "RAX" || input == "RBX" || input == "RCX" || input == "RDX" ||
+			   input == "RDI" || input == "RSI" || input == "RBP" || input == "RSP") {
+				return true;
+			}
+			return false;
+		}
+
+		bool IsValidHex(string input) {
+			regex hexPattern("^0x[0-9A-Fa-f]{8}$");
+			if (regex_match(input, hexPattern)){
+				return true;
+			}
+			return false;
+		}
+
+		bool IsValidAddress(string input) {
+			if (!IsValidHex(input)){
+				return false;
+			}
+			uint32_t value = stoul(input.substr(2), nullptr, 16);
+			return value <= 0x000000FF;
+		}
+
+		bool IsValidMMAccess(string input) {
+			if(input.front() == '[' && input.back() == ']'){
+				string inside = input.substr(1, input.size() - 2);
+				if (IsValidAddress(inside)){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool IsValidMMRegAccess(string input) {
+			if(input.front() == '[' && input.back() == ']'){
+				string inside = input.substr(1, input.size() - 2);
+				if (IsValidRegister(inside)){
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+
 		// Actual CLI Methods
 
+		void Interpreter(){
+
+			switch(this->action){
+				case 0:
+                    this->input.ClearCliList();
+					this->input.ClearOutputList();
+					this->input.Push("Clearing screen");
+					break;
+				case 1:
+					this->input.Push("Goodbye");
+					this->is_command_quit = true;
+					break;
+				case 2:
+					this->input.Push("Pong");
+					break;
+				case 3:
+					if(this->IsValidRegister(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							this->match[3].str() + "out, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidMMAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							this->match[3].str() + "out, MDRin",
+							"IRAFout, MARin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[2];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							"MDRout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[3];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidMMRegAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[2];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							this->match[3].str() + "out, MDRin",
+							reg + "out, MARin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMRegAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[3];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							"MDRout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else 
+					if(this->IsValidRegister(this->match[2]) && this->IsValidHex(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRDFout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.WriteRegister("IRDF", this->match[3].str());
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else{
+						this->input.Push("Invalid MOV command");
+					}
+					this->action = -2;
+					break;
+				case 4:
+					if(this->IsValidRegister(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							this->match[3].str() + "out, Yin",
+							this->match[2].str() + "out, SELECT Y, ADD, Zin",
+							"Zout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidMMAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							this->match[3].str() + "out, Yin",
+							"MDRout, SELECT Y, ADD, Zin",
+							"Zout, MDRin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[2];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							"MDRout, Yin",
+							this->match[3].str() + "out, SELECT Y, ADD, Zin",
+							"Zout, " + this->match[3].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[3];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidMMRegAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[2];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							this->match[3].str() + "out, Yin",
+							"MDRout, SELECT Y, ADD, Zin",
+							"Zout, MDRin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMRegAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[3];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							"MDRout, Yin",
+							this->match[2].str() + "out, SELECT Y, ADD, Zin",
+							"Zout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else{
+						this->input.Push("Invalid ADD command");
+					}
+					this->action = -2;
+					break;
+				case 5:
+					if(this->IsValidRegister(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							this->match[3].str() + "out, Yin",
+							this->match[2].str() + "out, SELECT Y, SUB, Zin",
+							"Zout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidMMAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							this->match[3].str() + "out, Yin",
+							"MDRout, SELECT Y, SUB, Zin",
+							"Zout, MDRin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[2];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							"MDRout, Yin",
+							this->match[3].str() + "out, SELECT Y, SUB, Zin",
+							"Zout, " + this->match[3].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[3];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidMMRegAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[2];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							this->match[3].str() + "out, Yin",
+							"MDRout, SELECT Y, SUB, Zin",
+							"Zout, MDRin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMRegAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[3];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							"MDRout, Yin",
+							this->match[2].str() + "out, SELECT Y, SUB, Zin",
+							"Zout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else{
+						this->input.Push("Invalid SUB command");
+					}
+					this->action = -2;
+					break;
+				case 6:
+					if(this->IsValidRegister(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							this->match[3].str() + "out, Yin",
+							this->match[2].str() + "out, SELECT Y, XOR, Zin",
+							"Zout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidMMAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							this->match[3].str() + "out, Yin",
+							"MDRout, SELECT Y, XOR, Zin",
+							"Zout, MDRin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[2];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						vector<string> microcode = {
+							"IRAFout, MARin, READ, WMFC",
+							"MDRout, Yin",
+							this->match[3].str() + "out, SELECT Y, XOR, Zin",
+							"Zout, " + this->match[3].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+						string address = this->match[3];
+						address = address.substr(1, address.size() - 2);
+						this->microprogramming.WriteRegister("IRAF", address);
+					}
+					else if(this->IsValidMMRegAccess(this->match[2]) && this->IsValidRegister(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[2];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							this->match[3].str() + "out, Yin",
+							"MDRout, SELECT Y, XOR, Zin",
+							"Zout, MDRin, WRITE, WMFC",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else if(this->IsValidRegister(this->match[2]) && this->IsValidMMRegAccess(this->match[3])){
+						this->microprogramming.SetMicrocodeCounter(0);
+						string reg = this->match[3];
+						reg = reg.substr(1, reg.size() - 2);
+						vector<string> microcode = {
+							reg + "out, MARin, READ, WMFC",
+							"MDRout, Yin",
+							this->match[2].str() + "out, SELECT Y, XOR, Zin",
+							"Zout, " + this->match[2].str() + "in",
+							"END"
+						};
+						this->microprogramming.SetMicrocode(microcode);
+					}
+					else{
+						this->input.Push("Invalid XOR command");
+					}
+					this->action = -2;
+					break;
+				case 7:
+					if(this->IsValidAddress(this->match[2]) && this->IsValidHex(this->match[3])){
+						this->microprogramming.MemoryWrite(this->match[3], this->match[2]);
+					}
+					this->action = -2;
+					break;
+				case -1:
+					this->microprogramming.SetRCX("0xFFFFFFFF");
+					this->input.Push("Invalid Command Line");
+					break;
+				default:
+					break;
+			}
+		}
+
+		void Initialize() {
+			this->ClearScreen();
+			this->microprogramming.Initialize();			
+			this->input.Initialize();
+			this->AssembleScreenOutputList();
+		}
+
+		void Run() {
+			this->input.Run(&this->match, &this->action);
+			this->Interpreter();
+			this->microprogramming.Run(this->clock_cycle);
+			this->AssembleScreenOutputList();
+			this->ConsoleOut();
+			this->clock_cycle++;
+		}
 };
