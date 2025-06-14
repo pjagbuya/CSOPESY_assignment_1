@@ -504,8 +504,8 @@ class Console {
 					this->action = -2;
 					break;
 				case -1:
-					this->microprogramming.SetRCX("0xFFFFFFFF");
 					this->input.Push("Invalid Command Line");
+					this->action = -2;
 					break;
 				default:
 					break;
