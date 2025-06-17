@@ -1,0 +1,6 @@
+Algo: FCFS
+Type: Common
+Core: 4
+Queue: 1
+
+Queue 0: FCFS 0

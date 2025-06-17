@@ -74,11 +74,10 @@ void marquee(std::atomic<bool>& is_quit, std::atomic<int>& speed, AtomicString& 
         	//Move cursor 
             std::lock_guard<std::mutex> lock(io_mutex);
             COORD saved_pos = getCursorPos();
-            moveCursorTo({0,0});
-            clearLines(0, max_h);
-            
             //Marquee Printing
         	for(int h = 0; h < max_h; h++){
+                moveCursorTo({0,short(h)});
+                clearCurrentLine();
         		if(marquee_pos.Y == h){
 	        		for(int w = 0; w < max_w; w++){
 	        			if(marquee_pos.X == w){
@@ -144,7 +143,7 @@ void console(std::atomic<bool>& is_quit, std::atomic<int>& speed, AtomicString& 
             std::lock_guard<std::mutex> lock(io_mutex);
             
             console_pos++;
-            moveCursorTo({0, y+console_pos});
+            moveCursorTo({(short)0, (short)(y + console_pos)});
             clearCurrentLine();
             
             if (std::regex_match(input, ping_regex)) 
@@ -167,7 +166,7 @@ void console(std::atomic<bool>& is_quit, std::atomic<int>& speed, AtomicString& 
 			{
 				clearLines(y+1, y+1+console_pos);
 				console_pos = 1;
-				moveCursorTo({0, y+console_pos});
+				moveCursorTo({(short)0, (short)(y + console_pos)});
 				
                 std::cout << "Clear Console";
             } 
