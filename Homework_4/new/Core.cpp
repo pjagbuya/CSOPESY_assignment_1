@@ -13,8 +13,7 @@ class Core {
         }
 
         void Run() {
+            this->process.Run();
         }
 
-        void Shutdown() {
-        }
 };

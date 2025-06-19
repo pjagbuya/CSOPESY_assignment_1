@@ -5,6 +5,7 @@
 
 class Scheduler {
     private:
+        string algo;
         CPU cpu;
         vector<Queue> ready_queue;
         Queue waiting_queue;
@@ -13,7 +14,8 @@ class Scheduler {
     public:
         Scheduler() : cpu(), ready_queue(), waiting_queue(), finished_queue() {}
 
-        void Initialize() {
+        void Initialize(string algo) { 
+            this->algo = algo;
             cpu.Initialize();
             for (auto& queue : ready_queue) {
                 queue.Initialize();
