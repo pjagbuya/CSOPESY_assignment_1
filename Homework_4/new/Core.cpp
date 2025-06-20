@@ -4,27 +4,35 @@
 
 class Core {
     private:
-        Process process;
+        shared_ptr<Process> process;
 
     public:
         Core() {}
 
-        Process GetProcess() {
+        shared_ptr<Process> GetProcess() {
             return process;
         }
 
-        void SetProcess(Process new_process) {
+        void SetProcess(shared_ptr<Process> new_process) {
             process = new_process;
         }
 
-        Process ContextSwitch(Process new_process) {
-            Process old_process = process;
+        shared_ptr<Process> ContextSwitch(shared_ptr<Process> new_process) {
+            shared_ptr<Process> old_process = process;
             process = new_process;
             return old_process;
         }
 
+        void Start(){
+            thread (&Core::Run, this).detach();
+        }
+
         void Run() {
-            this->process.Run();
+            while(true){
+                if(process){
+                    this->process->Run();
+                }
+            }
         }
 
 };

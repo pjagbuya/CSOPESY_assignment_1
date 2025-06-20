@@ -22,8 +22,8 @@ class Screen {
             this->output_list.push_back("");
         }
 
-        void Run(string output) {
-            this->output_list.push_back(output);
+        void Run(string output, int core_id = -1) {
+            this->output_list.push_back("At time : " + this->GetTime() + " using core " + to_string(core_id) + " : " + output);
         }
 
         void ReportUtil() {

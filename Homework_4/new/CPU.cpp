@@ -9,9 +9,18 @@ class CPU {
     public:
         CPU() {}
 
+        vector<Core> GetCores() {
+            return cores;
+        }
+
+        void SetCores(vector<Core> new_cores) {
+            cores = new_cores;
+        }
+
         void Initialize(int count) {
             for (int i = 0; i < count; ++i) {
                 cores.push_back(Core());
+                cores[i].Start();
             }
         }
 
