@@ -7,6 +7,7 @@ class Input {
         CommandInterpreter command_interpreter;
         string input;
         bool is_command_done;
+        vector<string> cli_list;
 
     public:
         Input() : command_interpreter(CommandInterpreter()) {
@@ -25,6 +26,26 @@ class Input {
             this->command_interpreter.Initialize();
             this->input = "";
             this->is_command_done = false;
+        }
+        
+        void ClearCliList() {
+            this->cli_list.clear();
+        }
+
+        vector<string> GetCliList() {
+            return this->cli_list;
+        }
+
+        void Push() {
+            if(this->cli_list.back() == "Invalid Command Line") {
+                this->cli_list.back() = this->input;
+            }
+            else {
+                if(this->cli_list.size() >= 10) {
+                    this->cli_list.pop_back();
+                }
+                this->cli_list.push_back(this->input);
+            }
         }
 
         void Run() {

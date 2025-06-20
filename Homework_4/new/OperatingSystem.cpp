@@ -55,7 +55,10 @@ class OperatingSystem {
         }
 
         void Run(){
-
+            this->KeyInput();
+            this->ConsoleManage();
+            this->AssembleOutput(this->console_manager.GetOutputList(), this->input.GetInput(), this->input.GetCliList());
+            this->Schedule();
         }
 
         void KeyInput() {
@@ -63,11 +66,11 @@ class OperatingSystem {
             
         }
 
-        void AssembleOutput() {
-            this->output.Run();
+        void AssembleOutput(vector<string> output_list, string input, vector<string> cli_list) {
+            this->output.Run(output_list, input, cli_list);
         }
 
-        void ConsoleManage(){
+        void ConsoleManage() {
             this->console_manager.Run();
         }
         

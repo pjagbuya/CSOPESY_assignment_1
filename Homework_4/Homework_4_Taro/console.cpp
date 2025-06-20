@@ -74,9 +74,10 @@ class Console {
 		
 		// Cursor and Color Methods
 
-		void MoveCursorTo(COORD coord) { SetConsoleCursorPosition(this->h_console, coord); }
-		void SetColor(int color) { SetConsoleTextAttribute(this->h_console, color); }
 		
+		void SetColor(int color) { SetConsoleTextAttribute(this->h_console, color); }
+
+		void MoveCursorTo(COORD coord) { SetConsoleCursorPosition(this->h_console, coord); }
 		void ClearCurrentLine() {
 		    CONSOLE_SCREEN_BUFFER_INFO csbi;
 		    DWORD count_written;
