@@ -51,9 +51,11 @@ class Process {
                 this->screen.Run(this->print_output);
                 this->burst_time--;
             }
+            this->ProcessTerminate();
         }
 
         void Terminate() {
+            this->status = "Terminated";
             this->Report();
         }
 

@@ -30,6 +30,7 @@ class Scheduler {
                 for(int i = 0; i < this->cpu.GetCores().size(); i++){
                     if(this->cpu.GetCore(i).GetProcess()->GetStatus() == "Terminated" && !this->ready_queue.empty()) {
                         this->cpu.GetCore(i).SetProcess(this->ready_queue[0].Get());
+                        this->cpu.GetCore(i).StartProcess();
                     }
                 }
 

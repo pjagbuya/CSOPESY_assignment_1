@@ -35,4 +35,9 @@ class Core {
             }
         }
 
+        void StartProcess(){
+            if (process) {
+                process->Start();
+            }
+        }
 };
