@@ -124,10 +124,10 @@ class OperatingSystem {
                         system("cls");
                         break;
                     default:
-                        this->input.GetCommandInterpreter().SetAction(-1);
+                        this->input.GetCommandInterpreter().SetAction(-2);
+                        break;
                 }
-                this->input.GetCommandInterpreter().SetAction(-2);
-                this->input.GetCommandInterpreter().SetCommandExecuted(true);
+                this->input.ResetCommandInterpreter();
             }
             
         }

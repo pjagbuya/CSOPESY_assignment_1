@@ -23,6 +23,11 @@ class Input {
         bool IsCommandDone() { return this->is_command_done; }
         void SetCommandDone(bool is_command_done) { this->is_command_done = is_command_done; }
 
+        void ResetCommandInterpreter() {
+            this->command_interpreter.SetCommandExecuted(true);
+            this->command_interpreter.SetAction(-2);
+        }
+
         void Initialize() {
             this->command_interpreter.Initialize();
             this->input = "";

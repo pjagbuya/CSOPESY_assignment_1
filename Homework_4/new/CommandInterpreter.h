@@ -18,7 +18,7 @@ class CommandInterpreter {
         bool IsInitialize() { return this->is_initialized; }
         void SetInitialize(bool is_initialized) { this->is_initialized = is_initialized; }
         bool IsCommandExecuted() { return this->is_command_executed; }
-        void SetCommandExecuted(bool is_command_done) { this->is_command_executed = is_command_done; }
+        void SetCommandExecuted(bool is_command_executed) { this->is_command_executed = is_command_executed; }
         int GetAction() { return this->action; }
         void SetAction(int action) { this->action = action; }
         vector<string> GetMatch() { return this->match; }
@@ -39,7 +39,7 @@ class CommandInterpreter {
                         (regex)"(exit)", 				//0
                         (regex)"(screen -s (\\S+))",	//1
                         (regex)"(screen -r (\\S+))",	//2
-                        (regex)"(screen -ls)",			//3
+                        (regex)"(l)",			//3
                         (regex)"(create (\\d+))",		//4
                         (regex)"(scheduler-stop)",		//5
                         (regex)"(report-util)",			//6

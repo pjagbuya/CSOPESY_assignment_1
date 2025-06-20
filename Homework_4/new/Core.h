@@ -35,7 +35,7 @@ class Core {
                 if(process){
                     this->process->Run();
                 }
-                Sleep(50);
+                Sleep(100);
             }
         }
 
