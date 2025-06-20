@@ -8,9 +8,10 @@ class ConsoleManager {
         ConsoleManager() {}
 
         void Initialize() {
+            this->current_screen_id = -1;
         }
 
-        void Run() {
+        void Run(Screen screen, Input input) {
         }
 
         void Shutdown() {

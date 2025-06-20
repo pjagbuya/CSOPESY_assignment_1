@@ -24,6 +24,7 @@ class Core {
         }
 
         void Run() {
-            process.Run();
+            this->process.Run();
         }
+
 };

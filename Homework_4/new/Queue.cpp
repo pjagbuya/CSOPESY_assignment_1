@@ -9,9 +9,11 @@ class Queue {
     public:
         Queue() {}
 
-        void Initialize() {
+        void Push(){
+            
         }
 
-        void Run() {
+        void Get(){
+
         }
 };
