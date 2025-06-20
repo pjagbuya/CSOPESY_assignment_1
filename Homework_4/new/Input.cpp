@@ -48,7 +48,7 @@ class Input {
             }
         }
 
-        void Run() {
+        void Run(int screen_id = -1) {
             if(_kbhit()){
 				char key = _getch();
                 if (key == '\r' || key == '\n') {
@@ -65,7 +65,7 @@ class Input {
 			}
             
             if(this->is_command_done) {
-                this->command_interpreter.Run(this->input);
+                this->command_interpreter.Run(this->input, screen_id);
                 this->input = "";
                 this->is_command_done = false;
             }

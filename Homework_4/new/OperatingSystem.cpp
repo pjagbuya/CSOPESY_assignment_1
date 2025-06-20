@@ -49,7 +49,7 @@ class OperatingSystem {
 
         void Initialize() {
             this->console_manager.Initialize();
-            this->scheduler.Initialize();
+            this->scheduler.Initialize("FCFS", 1, 4); // Example parameters for FCFS scheduling with 3 queues and 4 cores
             this->input.Initialize();
             this->output.Initialize();
         }
@@ -62,7 +62,7 @@ class OperatingSystem {
         }
 
         void KeyInput() {
-            this->input.Run();
+            this->input.Run(this->console_manager.GetCurrentScreenId());
             
         }
 
@@ -71,7 +71,6 @@ class OperatingSystem {
         }
 
         void ConsoleManage() {
-            this->console_manager.Run();
         }
         
         void Schedule() {

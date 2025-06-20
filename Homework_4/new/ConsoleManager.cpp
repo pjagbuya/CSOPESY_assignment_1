@@ -4,13 +4,13 @@
 
 class ConsoleManager {
     private:
-        string current_screen_id;
+        int current_screen_id;
 
     public:
         ConsoleManager() {}
 
-        string GetCurrentScreenId() { return this->current_screen_id; }
-        void SetCurrentScreenId(string current_screen_id) { this->current_screen_id = current_screen_id; }
+        int GetCurrentScreenId() { return this->current_screen_id; }
+        void SetCurrentScreenId(int current_screen_id) { this->current_screen_id = current_screen_id; }
 
         void Initialize() {
             this->current_screen_id = -1;

@@ -28,20 +28,34 @@ class CommandInterpreter {
             this->is_command_executed = true;
         }
 
-        void Run(string input) {
+        void Run(string input, int screen_id = -1) {
             this->is_command_executed = false;
-            vector<regex> command_list = {
-				//invalid						//-1
-				(regex)"(exit)", 				//0
-				(regex)"(screen -s (\\S+))",	//1
-				(regex)"(screen -r (\\S+))",	//2
-                (regex)"(screen -ls)",			//3
-                (regex)"(scheduler-start)",		//4
-                (regex)"(scheduler-stop)",		//5
-                (regex)"(report-util)",			//6
-                (regex)"(ping)",				//7
-				(regex)"(clear)",				//8
-			};
+            vector<regex> command_list;
+
+            switch(screen_id){
+                case -1:
+                    command_list = {
+                        //invalid						//-1
+                        (regex)"(exit)", 				//0
+                        (regex)"(screen -s (\\S+))",	//1
+                        (regex)"(screen -r (\\S+))",	//2
+                        (regex)"(screen -ls)",			//3
+                        (regex)"(scheduler-start)",		//4
+                        (regex)"(scheduler-stop)",		//5
+                        (regex)"(report-util)",			//6
+                        (regex)"(ping)",				//7
+                        (regex)"(clear)",				//8
+                    };
+                    break;
+                default:
+                    command_list = {
+                        // invalid                      //-1
+                        (regex)"(exit)",                //0
+                        (regex)"(process_smi)",         //1
+                        (regex)"(print (\\S+) (\\d+))"  //2
+                    };
+                    break;
+            }
 
 			bool is_valid = false;
 			
