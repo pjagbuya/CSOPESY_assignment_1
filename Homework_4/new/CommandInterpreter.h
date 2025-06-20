@@ -1,11 +1,12 @@
 #include "Lib.h"
+#pragma once
 
 class CommandInterpreter {
     private:
         bool is_initialized;
         bool is_command_executed;
         int action;
-        smatch match;
+        vector<string> match;
 
     public:
         CommandInterpreter() {
@@ -20,8 +21,7 @@ class CommandInterpreter {
         void SetCommandExecuted(bool is_command_done) { this->is_command_executed = is_command_done; }
         int GetAction() { return this->action; }
         void SetAction(int action) { this->action = action; }
-        smatch GetMatch() { return this->match; }
-        void SetMatch(smatch match) { this->match = match; }
+        vector<string> GetMatch() { return this->match; }
 
         void Initialize() {
             this->is_initialized = true;
@@ -40,7 +40,7 @@ class CommandInterpreter {
                         (regex)"(screen -s (\\S+))",	//1
                         (regex)"(screen -r (\\S+))",	//2
                         (regex)"(screen -ls)",			//3
-                        (regex)"(scheduler-start)",		//4
+                        (regex)"(create (\\d+))",		//4
                         (regex)"(scheduler-stop)",		//5
                         (regex)"(report-util)",			//6
                         (regex)"(ping)",				//7
@@ -59,8 +59,12 @@ class CommandInterpreter {
 
 			bool is_valid = false;
 			
+            smatch match; 
             for(int i = 0; i < command_list.size(); i++){
-                if(regex_match(input, this->match, command_list[i])){
+                if(regex_match(input, match, command_list[i])){
+                    for(int j = 0; j < match.size(); j++){
+                        this->match.push_back(match[j]);
+                    }
                     is_valid = true;
                     this->action = i;
                     i = command_list.size();

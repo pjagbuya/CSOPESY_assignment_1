@@ -1,10 +1,13 @@
 #include "Lib.h"
-#include "Screen.cpp"
-#include "Input.cpp"
+#pragma once
+
+#include "Screen.h"
+#include "Input.h"
 
 class ConsoleManager {
     private:
         int current_screen_id;
+        vector<string> output_list;
 
     public:
         ConsoleManager() {}
@@ -17,9 +20,12 @@ class ConsoleManager {
         }
 
         void Run(Screen screen, Input input) {
+            this->output_list = screen.GetOutputList();
+            this->output_list.push_back("Input: " + input.GetInput());
         }
 
         vector<string> GetOutputList() {
+            return this->output_list;
         }
 
         void Shutdown() {

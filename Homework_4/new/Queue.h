@@ -1,6 +1,7 @@
 #include "Lib.h"
+#pragma once
 
-#include "Process.cpp"
+#include "Process.h"
 
 class Queue {
     private:
@@ -13,6 +14,17 @@ class Queue {
             if (process) {
                 processes.push_back(process);
             }
+        }
+
+        int GetSize() {
+            return processes.size();
+        }
+
+        shared_ptr<Process> GetProcessAtIndex(int index) {
+            if (index < 0 || index >= processes.size()) {
+                return nullptr;
+            }
+            return processes[index];
         }
 
         shared_ptr<Process> Get(){

@@ -1,9 +1,9 @@
 #include "Lib.h"
 
-#include "ConsoleManager.cpp"
-#include "Scheduler.cpp"
-#include "Input.cpp"
-#include "Output.cpp"
+#include "ConsoleManager.h"
+#include "Scheduler.h"
+#include "Input.h"
+#include "Output.h"
 
 class OperatingSystem {
     private:
@@ -13,9 +13,10 @@ class OperatingSystem {
         Output output;
         bool is_initialized;
         bool is_quit;
+        Screen screen;
 
     public:
-        OperatingSystem() : console_manager(), scheduler(), input(), output() {
+        OperatingSystem() : console_manager(), scheduler(), input(), output(), screen(){
             this->is_initialized = false;
             this->is_quit = false;
         }
@@ -39,7 +40,7 @@ class OperatingSystem {
             cin >> input;
             if (input == "exit") {
                 this->is_quit = true;
-            } else if(input == "initialize") {
+            } else if(input == "a") {
                 this->is_initialized = true;
                 this->Initialize();
             } else {
@@ -52,25 +53,91 @@ class OperatingSystem {
             this->scheduler.Initialize("FCFS", 1, 4); // Example parameters for FCFS scheduling with 3 queues and 4 cores
             this->input.Initialize();
             this->output.Initialize();
+            cout << "Operating System Initialized." << endl;
+            Sleep(1000); // Simulate some delay for initialization
+            system("cls");
         }
 
         void Run(){
             this->KeyInput();
             this->ConsoleManage();
-            this->AssembleOutput(this->console_manager.GetOutputList(), this->input.GetInput(), this->input.GetCliList());
+            this->AssembleOutput(this->console_manager.GetOutputList());
             this->Schedule();
+            Sleep(50);
         }
 
         void KeyInput() {
             this->input.Run(this->console_manager.GetCurrentScreenId());
+
+            if(!this->input.GetCommandInterpreter().IsCommandExecuted()) {
+                vector<string> output_list;
+                switch(this->input.GetCommandInterpreter().GetAction()) {
+                    case 0: // exit
+                        this->is_quit = true;
+                        break;
+                    case 1: // screen -s
+                        break;
+                    case 2: // screen -r
+                        break;
+                    case 3: // screen -ls
+                        output_list.clear();
+                        this->screen.ClearOutputList();
+                        output_list.push_back("------------------------------");
+                        output_list.push_back("Waiting Processes: + " + to_string(this->scheduler.GetReadyQueue()[0].GetSize()));
+                        for (int i = 0; i < this->scheduler.GetReadyQueue()[0].GetSize(); i++) {
+                            output_list.push_back(this->scheduler.GetReadyQueue()[0].GetProcessAtIndex(i)->ProcessInfo());
+                        };
+                        output_list.push_back(" ");
+                        output_list.push_back("Running Processes: +  " + to_string(this->scheduler.GetCPU().GetCores().size()));
+                        for (int i = 0; i < this->scheduler.GetCPU().GetCores().size(); i++) {
+                            shared_ptr<Process> process = this->scheduler.GetCPU().GetCore(i).GetProcess();
+                            if (process) {
+                                output_list.push_back(process->ProcessInfo());
+                            } else {
+                                output_list.push_back("Core " + to_string(i) + " is idle.");
+                            }
+                        };
+                        output_list.push_back(" ");
+                        output_list.push_back("Finished Processes: +  " + to_string(this->scheduler.GetFinishedQueue().GetSize()));
+                        for (int i = 0; i < this->scheduler.GetFinishedQueue().GetSize(); i++) {
+                            output_list.push_back(this->scheduler.GetFinishedQueue().GetProcessAtIndex(i)->ProcessInfo());
+                        };
+                        this->screen.SetOutputList(output_list);
+                        break;
+                    case 4: // create
+                        for(int i = 0; i < stoi(this->input.GetCommandInterpreter().GetMatch()[2]); i++) {
+                            shared_ptr<Process> process = make_shared<Process>("screen_" + to_string(i), "SRTF then RR at Time Slice " + to_string(i), 100);
+                            this->scheduler.PushReadyQueue(0, process);
+                        }
+                        this->screen.SetOutputList({"Processes created successfully.", "Waiting Processes: + " + to_string(this->scheduler.GetReadyQueue()[0].GetSize())});
+            
+                        break;
+                    case 5: // scheduler-stop
+                        break;
+                    case 6: // report-util
+                        break;
+                    case 7: // ping
+                        
+                        break;
+                    case 8: // clear
+                        this->screen.ClearOutputList();
+                        system("cls");
+                        break;
+                    default:
+                        this->input.GetCommandInterpreter().SetAction(-1);
+                }
+                this->input.GetCommandInterpreter().SetAction(-2);
+                this->input.GetCommandInterpreter().SetCommandExecuted(true);
+            }
             
         }
 
-        void AssembleOutput(vector<string> output_list, string input, vector<string> cli_list) {
-            this->output.Run(output_list, input, cli_list);
+        void AssembleOutput(vector<string> output_list) {
+            this->output.Run(output_list);
         }
 
         void ConsoleManage() {
+            this->console_manager.Run(this->screen, this->input);
         }
         
         void Schedule() {

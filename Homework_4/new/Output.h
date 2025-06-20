@@ -1,6 +1,5 @@
 #include "Lib.h"
-
-#include "Lib.h"
+#pragma once
 
 class Output {
     private:
@@ -29,22 +28,12 @@ class Output {
             this->h_console = GetStdHandle(STD_OUTPUT_HANDLE);
         }
 
-        void Run(vector<string> output_list, string input, vector<string> cli_list) {
+        void Run(vector<string> output_list) {
             int i = 0;
             
             for (string  line : output_list) {
                 this->ClearLine(i);
                 cout << line << endl;
-                i++;
-            }
-
-            this->ClearLine(i);
-            cout << input << endl;
-            i++;
-
-            for (string cli_line : cli_list) {
-                this->ClearLine(i);
-                cout << cli_line << endl;
                 i++;
             }
         }

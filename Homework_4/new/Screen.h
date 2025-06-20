@@ -1,4 +1,5 @@
 #include "Lib.h"
+#pragma once
 
 class Screen {
     private:
@@ -15,6 +16,18 @@ class Screen {
 			time_string.erase(time_string.length() - 1);
 			return time_string;
 		}
+
+        void SetOutputList(vector<string> output_list) {
+            this->output_list = output_list;
+        }
+
+        vector<string> GetOutputList() {
+            return this->output_list;
+        }
+
+        void ClearOutputList() {
+            this->output_list.clear();
+        }
 
         void Initialize(string name) {
             this->output_list.push_back("Process name: " + name);

@@ -1,6 +1,7 @@
 #include "Lib.h"
+#pragma once
 
-#include "CommandInterpreter.cpp"
+#include "CommandInterpreter.h"
 
 class Input {
     private:

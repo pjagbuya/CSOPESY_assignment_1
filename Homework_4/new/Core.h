@@ -1,13 +1,15 @@
 #include "Lib.h"
+#pragma once
 
-#include "Process.cpp"
+#include "Process.h"
 
 class Core {
     private:
         shared_ptr<Process> process;
+        int id;
 
     public:
-        Core() {}
+        Core(int id) { this->id = id; }
 
         shared_ptr<Process> GetProcess() {
             return process;
@@ -15,6 +17,7 @@ class Core {
 
         void SetProcess(shared_ptr<Process> new_process) {
             process = new_process;
+            this->process->SetCoreId(this->id);
         }
 
         shared_ptr<Process> ContextSwitch(shared_ptr<Process> new_process) {
@@ -32,6 +35,7 @@ class Core {
                 if(process){
                     this->process->Run();
                 }
+                Sleep(50);
             }
         }
 

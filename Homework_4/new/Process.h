@@ -1,7 +1,8 @@
 #include "Lib.h"
+#pragma once
 
-#include "Screen.cpp"
-#include "File.cpp"
+#include "Screen.h"
+#include "File.h"
 
 class Process {
     private:
@@ -15,10 +16,23 @@ class Process {
         int response_time;
         int wait_time;
         int burst_time;
+        int full_burst_time;
         string status;
+        string time_created;
+        int core_id;
 
     public:
-        Process() : screen(), file() {}
+        Process() : screen(), file() {
+        }
+
+        Process(string pid, string print_output, int burst_time) : screen(), file() {
+            this->pid = pid;
+            this->print_output = print_output;
+            this->burst_time = burst_time;
+            this->full_burst_time = burst_time;
+            this->status = "Ready";
+            this->time_created = screen.GetTime();
+        }
 
         void Initialize() {
             this->status = "Not Ready";
@@ -31,6 +45,10 @@ class Process {
             if(this->burst_time == 0){
                 this->Terminate();
             }
+        }
+
+        void SetCoreId(int core_id) {
+            this->core_id = core_id;
         }
 
         void Ready(string print_output){
@@ -60,5 +78,14 @@ class Process {
         }
 
         void Report() {
+        }
+
+        string ProcessInfo() {
+            if(this->status != "Terminated"){
+                return this->pid + "   (" + this->time_created + ")   " + to_string(this->core_id) + "   " + to_string(this->full_burst_time-this->burst_time) + "/" + to_string(this->full_burst_time);   
+            }
+            else{
+                return this->pid + "   (" + this->time_created + ")   " + "Finished" + "   " + to_string(this->full_burst_time-this->burst_time) + "/" + to_string(this->full_burst_time);   
+            }
         }
 };

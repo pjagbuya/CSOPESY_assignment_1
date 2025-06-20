@@ -1,6 +1,7 @@
 #include "Lib.h"
+#pragma once
 
-#include "Core.cpp"
+#include "Core.h"
 
 class CPU {
     private:
@@ -19,14 +20,12 @@ class CPU {
 
         void Initialize(int count) {
             for (int i = 0; i < count; ++i) {
-                cores.push_back(Core());
+                cores.push_back(Core(i));
                 cores[i].Start();
             }
         }
 
         Core GetCore(int index) {
-            if (index < 0 || index >= cores.size()) {
-            }
             return cores[index];
         }
 
