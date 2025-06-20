@@ -93,7 +93,9 @@ private:
     void execute(const string& line) {
         smatch match;
         if (regex_match(line, match, regex(R"(PRINT\((.*)\))"))) {
-            handle_print(match[1]);
+            // Disable for the mean time for Week 6 Group Homework;
+            // handle_print(match[1]);
+            handle_print_hw();
         } else if (regex_match(line, match, regex(R"(DECLARE\((\w+),\s*(\d+)\))"))) {
             vars[match[1]] = clamp_u16(stoi(match[2]));
             cout << "Declare executed" << endl;
@@ -126,6 +128,15 @@ private:
         } else {
             cout << msg << endl;
         }
+    }
+
+
+    // For Week 6 Group Homework purposes only
+    void handle_print_hw() const {
+        string filename = process_name + "_prints.txt";
+        ofstream log(filename, ios::app);
+        log << "Hello world from " << process_name << "!" << endl;
+        log.close();
     }
 
     void handle_add(const string& dest, const string& op1, const string& op2) {
@@ -219,17 +230,19 @@ private:
 
 int main() {
 
-    vector<string> program = {
-        "DECLARE(var1, 5)",
-        "ADD(var1, var1, 10)",
-        "SUBTRACT(var1, var1, 3)",
-        "PRINT(\"Value from: \" +var1)",
-        "SLEEP(2)",
-        "FOR([PRINT(\"Value from: \" +var1); SUBTRACT(var1, var1, 1);], 2)",
-        "FOR([PRINT(\"Value from: \" +var1); ADD(var1, var1, 1); FOR([PRINT(\"Value from: \" +var1); SUBTRACT(var1, var1, 1);], 2);], 1)",
-        "PRINT()",
-    };
+    // vector<string> program = {
+    //     "DECLARE(var1, 5)",
+    //     "ADD(var1, var1, 10)",
+    //     "SUBTRACT(var1, var1, 3)",
+    //     "PRINT(\"Value from: \" +var1)",
+    //     "SLEEP(2)",
+    //     "FOR([PRINT(\"Value from: \" +var1); SUBTRACT(var1, var1, 1);], 2)",
+    //     "FOR([PRINT(\"Value from: \" +var1); ADD(var1, var1, 1); FOR([PRINT(\"Value from: \" +var1); SUBTRACT(var1, var1, 1);], 2);], 1)",
+    //     "PRINT()",
+    // };
 
+    vector<string> program(100, "PRINT()");
+    
     Interpreter interp("process_1", program);
 
     cout << "Total instructions after unrolling: " << interp.total_instructions() << endl;
