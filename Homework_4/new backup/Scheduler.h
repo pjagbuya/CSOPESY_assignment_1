@@ -98,10 +98,8 @@ class Scheduler {
                             this->finished_queue.Push(this->cpu.GetCore(i).GetProcess());
                             this->cpu.ClearProcessAtCore(i);
                         }
-                        else if(this->cpu.GetCore(i).GetProcess()->GetTimeQuantum() >= 10){
-                            shared_ptr<Process> process = this->cpu.GetCore(i).GetProcess();
-                            process->SetTimeQuantum(0);
-                            this->ready_queue[0].Push(process);
+                        else if(this->cpu.GetCore(i).GetProcess()->GetStatus() == "Interrupt") {
+                            this->ready_queue[0].Push(this->cpu.GetCore(i).GetProcess());
                             this->cpu.ClearProcessAtCore(i);
                         }
                     }

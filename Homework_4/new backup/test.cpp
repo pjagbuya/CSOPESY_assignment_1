@@ -1,5 +1,6 @@
 #include "Lib.h"
 #include <cstdlib>
+
 #include "Scheduler.h"
 
 HANDLE h_console;
@@ -85,14 +86,14 @@ int main(){
         }
 
         output_list.push_back("C:user>" + input);
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 10; i++) {
             output_list.push_back("");
         }
         
         if(is_command_done) {
             if(regex_match(input, match, (regex)"(create (\\d+))")){
                 for(int i = 0; i < stoi(match[2]); i++) {
-                        shared_ptr<Process> process = make_shared<Process>("screen_" + to_string(i), "SRTF then RR at Time Slice " + to_string(i), 100 + rand() % 1000);
+                        shared_ptr<Process> process = make_shared<Process>("screen_" + to_string(i), "SRTF then RR at Time Slice " + to_string(i), rand() % 1000 + 100, 10);
                         scheduler.PushReadyQueue(0, process);
                     }
             }

@@ -18,6 +18,7 @@ class Process {
         int burst_time;
         int full_burst_time;
         int time_quantum;
+        int full_time_quantum;
         string status;
         string time_created;
         int core_id;
@@ -26,7 +27,7 @@ class Process {
         Process() : screen(), file() {
         }
 
-        Process(string pid, string print_output, int burst_time) : screen(), file() {
+        Process(string pid, string print_output, int burst_time, int full_time_quantum) : screen(), file() {
             this->pid = pid;
             this->print_output = print_output;
             this->burst_time = burst_time;
@@ -34,6 +35,7 @@ class Process {
             this->status = "Ready";
             this->time_created = screen.GetTime();
             this->core_id = -1; // Default core ID
+            this->full_time_quantum = full_time_quantum;
         }
 
         string GetPID() { return this->pid; }
@@ -48,6 +50,7 @@ class Process {
         int GetBurstTime() { return this->burst_time; }
 
         int GetTimeQuantum() { return this->time_quantum; }
+        
         void SetTimeQuantum(int time_quantum) {
             this->time_quantum = time_quantum;
         }
@@ -55,6 +58,13 @@ class Process {
         void ProcessTerminate(){
             if(this->burst_time == 0){
                 this->Terminate();
+            }
+        }
+
+        void ProcessInterrupt(){
+            if(this->time_quantum == this->full_time_quantum){
+                this->Pause();
+                this->time_quantum = 0;
             }
         }
 
@@ -82,6 +92,7 @@ class Process {
                 this->time_quantum++;
             }
             this->ProcessTerminate();
+            this->ProcessInterrupt();
         }
 
         void Terminate() {
