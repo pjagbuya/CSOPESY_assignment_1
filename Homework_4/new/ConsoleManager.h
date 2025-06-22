@@ -21,7 +21,7 @@ class ConsoleManager {
 
         void Run(Screen screen, Input input) {
             this->output_list = screen.GetOutputList();
-            this->output_list.push_back("Input + " + to_string(input.GetCommandInterpreter().GetAction()) + ": " + input.GetInput());
+            this->output_list.push_back("C:user>" + input.GetInput());
         }
 
         vector<string> GetOutputList() {

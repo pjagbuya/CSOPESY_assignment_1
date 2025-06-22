@@ -105,7 +105,7 @@ class OperatingSystem {
                         this->screen.SetOutputList(output_list);
                         break;
                     case 4: // create
-                        for(int i = 0; i < stoi(this->input.GetCommandInterpreter().GetMatch()[2]); i++) {
+                        for(int i = 0; i < stoi(this->input.GetCommandInterpreter()->GetMatch()[2]); i++) {
                             shared_ptr<Process> process = make_shared<Process>("screen_" + to_string(i), "SRTF then RR at Time Slice " + to_string(i), 100);
                             this->scheduler.PushReadyQueue(0, process);
                         }

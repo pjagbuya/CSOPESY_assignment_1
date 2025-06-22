@@ -16,7 +16,7 @@ class Input {
             this->is_command_done = false;
         }
 
-        CommandInterpreter GetCommandInterpreter() { return this->command_interpreter; }
+        const CommandInterpreter& GetCommandInterpreter() { return this->command_interpreter; }
         void SetCommandInterpreter(CommandInterpreter command_interpreter) { this->command_interpreter = command_interpreter; }
         string GetInput() { return this->input; }
         void SetInput(string input) { this->input = input; }

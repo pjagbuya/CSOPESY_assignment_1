@@ -32,7 +32,10 @@ class Process {
             this->full_burst_time = burst_time;
             this->status = "Ready";
             this->time_created = screen.GetTime();
+            this->core_id = -1; // Default core ID
         }
+
+        string GetPID() { return this->pid; }
 
         void Initialize() {
             this->status = "Not Ready";
@@ -40,6 +43,8 @@ class Process {
         }
 
         string GetStatus(){ return this->status; }
+
+        int GetBurstTime() { return this->burst_time; }
 
         void ProcessTerminate(){
             if(this->burst_time == 0){
@@ -66,7 +71,7 @@ class Process {
 
         void Run() {
             if(this->status == "Run"){
-                this->screen.Run(this->print_output);
+                //this->screen.Run(this->print_output);
                 this->burst_time--;
             }
             this->ProcessTerminate();

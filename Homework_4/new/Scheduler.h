@@ -70,43 +70,22 @@ class Scheduler {
         void Run() {
             if (algo == "FCFS") {
                 for(int i = 0; i < this->cpu.GetCores().size(); i++){
-                    
-                    //cout << "Test0.1" << endl; Sleep(50);
-
-                    //cout << this->cpu.GetCore(i).GetProcess();
-
-                    //cout << "Test0.2" << endl; Sleep(50);
-
-                    //cout << (this->ready_queue[0].GetSize() > 0);
-
-                    //cout << "Test0.3" << endl; Sleep(50);
-
                     if(!this->cpu.GetCore(i).GetProcess() && this->ready_queue[0].GetSize() > 0) {
-
-                        //cout << "Test1.1" << endl; Sleep(50);
-
-                        this->cpu.GetCore(i).SetProcess(this->ready_queue[0].Get());
-
-                        //cout << "Test1.2" << endl; Sleep(50);
-
-                        this->cpu.GetCore(i).StartProcess();
+                        shared_ptr<Process> process = this->ready_queue[0].Get();
+                        process->Start();
+                        cout << "Process " << (process ? process->GetPID() : "null") << " removed from queue." << endl;
+                        this->cpu.SetProcessToCore(i, process);
+                        cout << "Core " << i << " is assigned process: " << this->cpu.GetCore(i).GetProcess()->GetPID()  << "with burst time" << this->cpu.GetCore(i).GetProcess()->GetBurstTime() << endl;
+                        Sleep(SLEEP_TIME);
                     }
                     else if(this->cpu.GetCore(i).GetProcess()){
-                        if(this->cpu.GetCore(i).GetProcess()->GetStatus() == "Terminated" && this->ready_queue[0].GetSize() > 0) {
-                            
-                            //cout << "Test2.1" << endl; Sleep(50);
-                            
+                        if(this->cpu.GetCore(i).GetProcess()->GetStatus() == "Terminated") {
+
+                            cout << "Test0" << endl; Sleep(1000);
                             this->finished_queue.Push(this->cpu.GetCore(i).GetProcess());
-
-                            //cout << "Test2.2" << endl; Sleep(50);
-
-                            this->cpu.GetCore(i).SetProcess(this->ready_queue[0].Get());
-
-                            //cout << "Test2.3" << endl; Sleep(50);
-
-                            this->cpu.GetCore(i).StartProcess();
-
-                            //cout << "Test2.4" << endl; Sleep(50);
+                            cout << "Test1" << endl; Sleep(1000);
+                            this->cpu.ClearProcessAtCore(i);
+                            cout << "Test2" << endl; Sleep(1000);
                         }
                     }
                 }

@@ -9,3 +9,5 @@
 #include <string>
 #include <thread>
 using namespace std;
+
+#define SLEEP_TIME 50

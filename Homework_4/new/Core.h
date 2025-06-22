@@ -12,11 +12,11 @@ class Core {
         Core(int id) { this->id = id; }
 
         shared_ptr<Process> GetProcess() {
-            return process;
+            return this->process;
         }
 
         void SetProcess(shared_ptr<Process> new_process) {
-            process = new_process;
+            this->process = new_process;
             this->process->SetCoreId(this->id);
         }
 
@@ -32,16 +32,10 @@ class Core {
 
         void Run() {
             while(true){
-                if(process){
+                if(this->process || this->process != nullptr){
                     this->process->Run();
                 }
-                Sleep(100);
-            }
-        }
-
-        void StartProcess(){
-            if (process) {
-                process->Start();
+                Sleep(SLEEP_TIME);
             }
         }
 };

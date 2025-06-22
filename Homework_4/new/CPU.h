@@ -14,6 +14,18 @@ class CPU {
             return cores;
         }
 
+        void SetProcessToCore(int core_index, shared_ptr<Process> process) {
+            if (core_index >= 0 && core_index < cores.size()) {
+                cores[core_index].SetProcess(process);
+            }
+        }
+
+        void ClearProcessAtCore(int core_index) {
+            if (core_index >= 0 && core_index < cores.size()) {
+                cores[core_index].SetProcess(nullptr);
+            }
+        }
+
         void SetCores(vector<Core> new_cores) {
             cores = new_cores;
         }
@@ -21,7 +33,9 @@ class CPU {
         void Initialize(int count) {
             for (int i = 0; i < count; ++i) {
                 cores.push_back(Core(i));
-                cores[i].Start();
+            }
+            for(auto& core : this->cores) {
+                core.Start();
             }
         }
 
