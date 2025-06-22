@@ -17,30 +17,16 @@ class Scheduler {
     public:
         Scheduler() : cpu(), ready_queue(), waiting_queue(), finished_queue() {}
 
-        void SetCPU(CPU cpu) {
-            this->cpu = cpu;
-        }
-        CPU GetCPU() {
-            return this->cpu;
-        }
-        void SetReadyQueue(vector<Queue> ready_queue) {
-            this->ready_queue = ready_queue;
-        }
-        vector<Queue> GetReadyQueue() {
-            return this->ready_queue;
-        }
-        void SetWaitingQueue(Queue waiting_queue) {
-            this->waiting_queue = waiting_queue;
-        }
-        Queue GetWaitingQueue() {
-            return this->waiting_queue;
-        }
-        void SetFinishedQueue(Queue finished_queue) {
-            this->finished_queue = finished_queue;
-        }
-        Queue GetFinishedQueue() {
-            return this->finished_queue;
-        }
+        string GetAlgo() { return this->algo; }
+        void SetAlgo(string algo) { this->algo = algo; }
+        CPU GetCPU() { return this->cpu; }
+        void SetCPU(CPU cpu) { this->cpu = cpu; }
+        vector<Queue> GetReadyQueue() { return this->ready_queue; }
+        void SetReadyQueue(vector<Queue> ready_queue) { this->ready_queue = ready_queue; }
+        Queue GetWaitingQueue() { return this->waiting_queue; }
+        void SetWaitingQueue(Queue waiting_queue) { this->waiting_queue = waiting_queue; }
+        Queue GetFinishedQueue() { return this->finished_queue; }
+        void SetFinishedQueue(Queue finished_queue) { this->finished_queue = finished_queue; }
         void PushReadyQueue(int index, shared_ptr<Process> process) {
             if (process) {
                 this->ready_queue[index].Push(process);
@@ -67,48 +53,55 @@ class Scheduler {
 
         }
 
-        void Run() {
-            if (algo == "FCFS") {
-                for(int i = 0; i < this->cpu.GetCores().size(); i++){
-                    if(this->cpu.GetCoreAtIndex(i).GetProcess()){
-                        if(this->cpu.GetCoreAtIndex(i).GetProcess()->GetStatus() == "Terminated") {
-                            this->finished_queue.Push(this->cpu.GetCoreAtIndex(i).GetProcess());
-                            this->cpu.ClearProcessAtCore(i);
-                        }
-                    }        
-                }
-                for(int i = 0; i < this->cpu.GetCores().size(); i++){
-                    if(!this->cpu.GetCoreAtIndex(i).GetProcess() && this->ready_queue[0].GetSize() > 0) {
-                        shared_ptr<Process> process = this->ready_queue[0].Get();
-                        process->Start();
-                        this->cpu.SetProcessToCore(i, process);
-                        Sleep(SLEEP_TIME);
-                    }
-                }
+        void Start() {
+            thread scheduler_thread(&Scheduler::Run, this);
+            scheduler_thread.detach();
+        }
 
-            } 
-            else if (algo == "RR") {
-                for(int i = 0; i < this->cpu.GetCores().size(); i++){
-                    if(this->cpu.GetCoreAtIndex(i).GetProcess()){
-                        if(this->cpu.GetCoreAtIndex(i).GetProcess()->GetStatus() == "Terminated") {
-                            this->finished_queue.Push(this->cpu.GetCoreAtIndex(i).GetProcess());
-                            this->cpu.ClearProcessAtCore(i);
+        void Run() {
+            while(true){
+                if (algo == "FCFS") {
+                    for(int i = 0; i < this->cpu.GetCores().size(); i++){
+                        if(this->cpu.GetCoreAtIndex(i).GetProcess()){
+                            if(this->cpu.GetCoreAtIndex(i).GetProcess()->GetStatus() == "Terminated") {
+                                this->finished_queue.Push(this->cpu.GetCoreAtIndex(i).GetProcess());
+                                this->cpu.ClearProcessAtCore(i);
+                            }
+                        }        
+                    }
+                    for(int i = 0; i < this->cpu.GetCores().size(); i++){
+                        if(!this->cpu.GetCoreAtIndex(i).GetProcess() && this->ready_queue[0].GetSize() > 0) {
+                            shared_ptr<Process> process = this->ready_queue[0].Get();
+                            process->Start();
+                            this->cpu.SetProcessToCore(i, process);
+                            Sleep(SLEEP_TIME);
                         }
-                        else if(this->cpu.GetCoreAtIndex(i).GetProcess()->GetStatus() == "Interrupt") {
-                            this->ready_queue[0].Push(this->cpu.GetCoreAtIndex(i).GetProcess());
-                            this->cpu.ClearProcessAtCore(i);
+                    }
+
+                } 
+                else if (algo == "RR") {
+                    for(int i = 0; i < this->cpu.GetCores().size(); i++){
+                        if(this->cpu.GetCoreAtIndex(i).GetProcess()){
+                            if(this->cpu.GetCoreAtIndex(i).GetProcess()->GetStatus() == "Terminated") {
+                                this->finished_queue.Push(this->cpu.GetCoreAtIndex(i).GetProcess());
+                                this->cpu.ClearProcessAtCore(i);
+                            }
+                            else if(this->cpu.GetCoreAtIndex(i).GetProcess()->GetStatus() == "Interrupt") {
+                                this->ready_queue[0].Push(this->cpu.GetCoreAtIndex(i).GetProcess());
+                                this->cpu.ClearProcessAtCore(i);
+                            }
+                        }
+                    }
+                    for(int i = 0; i < this->cpu.GetCores().size(); i++){
+                        if(!this->cpu.GetCoreAtIndex(i).GetProcess() && this->ready_queue[0].GetSize() > 0) {
+                            shared_ptr<Process> process = this->ready_queue[0].Get();
+                            process->Start();
+                            this->cpu.SetProcessToCore(i, process);
+                            Sleep(SLEEP_TIME);
                         }
                     }
                 }
-                for(int i = 0; i < this->cpu.GetCores().size(); i++){
-                    if(!this->cpu.GetCoreAtIndex(i).GetProcess() && this->ready_queue[0].GetSize() > 0) {
-                        shared_ptr<Process> process = this->ready_queue[0].Get();
-                        process->Start();
-                        this->cpu.SetProcessToCore(i, process);
-                        Sleep(SLEEP_TIME);
-                    }
-                }
-            }
-            this->cpu_cycle++;       
+                this->cpu_cycle++; 
+            }      
         }
 };

@@ -14,6 +14,8 @@ class ConsoleManager {
 
         int GetCurrentScreenId() { return this->current_screen_id; }
         void SetCurrentScreenId(int current_screen_id) { this->current_screen_id = current_screen_id; }
+        vector<string> GetOutputList() { return this->output_list; }
+        void SetOutputList(vector<string> output_list) { this->output_list = output_list; }
 
         void Initialize() {
             this->current_screen_id = -1;
@@ -22,10 +24,6 @@ class ConsoleManager {
         void Run(Screen screen, Input input) {
             this->output_list = screen.GetOutputList();
             this->output_list.push_back("C:user>" + input.GetInput());
-        }
-
-        vector<string> GetOutputList() {
-            return this->output_list;
         }
 
         void Shutdown() {

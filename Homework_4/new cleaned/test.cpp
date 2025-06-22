@@ -46,8 +46,9 @@ int main(){
     smatch match;
     int process_i = 0;
 
+    scheduler.Start();
+    
     while(true){
-        scheduler.Run();
 
         output_list.clear();
         output_list.push_back("Waiting Processes: + " + to_string(scheduler.GetReadyQueue()[0].GetSize()));

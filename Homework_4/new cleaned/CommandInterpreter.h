@@ -22,6 +22,7 @@ class CommandInterpreter {
         int GetAction() { return this->action; }
         void SetAction(int action) { this->action = action; }
         vector<string> GetMatch() { return this->match; }
+        void SetMatch(vector<string> match) { this->match = match; }
 
         void Initialize() {
             this->is_initialized = true;
