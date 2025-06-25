@@ -28,8 +28,12 @@ class Queue {
         }
 
         shared_ptr<Process> Get(){
-            shared_ptr<Process> process = this->processes.empty() ? nullptr : this->processes.front();
-            this->processes.erase(processes.begin());
+            if (this->processes.empty()) {
+                return nullptr;
+            }
+
+            shared_ptr<Process> process = this->processes.front();
+            this->processes.erase(this->processes.begin());
             return process;
         }
 };
