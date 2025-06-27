@@ -7,6 +7,7 @@
 #include "Process.h"
 
 struct Core {
+    int id;
     int pid;
     uint32_t time_quantum;
     uint32_t delay;
@@ -27,7 +28,10 @@ class Scheduler {
 
 public:
     Scheduler(map<int, Process>& processes, queue<int>& ready_queue, int num_cores, uint32_t time_quantum, uint32_t delay)
-        : processes(processes), ready_queue(ready_queue), cores(num_cores, Core{-1, 0, 0}), time_quantum(time_quantum), delay(delay), first_run(true) {}
+    : processes(processes), ready_queue(ready_queue), cores(num_cores, Core{-1, 0, 0}), time_quantum(time_quantum), delay(delay), first_run(true) {
+        for (int i = 0; i < num_cores; ++i)
+            cores[i] = Core{i, -1, 0, 0};
+    }
 
     void run_rr() {
 
@@ -59,7 +63,7 @@ public:
                     continue;
                 }
 
-                process.tick(core.pid);
+                process.tick(core.id);
                 core.time_quantum++;
 
                 if (process.is_done()) {
@@ -95,7 +99,7 @@ public:
                     continue;
                 }
                 
-                process.tick(core.pid);
+                process.tick(core.id);
 
                 if (process.is_done()) {
                     core.pid = -1;
@@ -153,7 +157,7 @@ public:
             cout << "\nCurrent instruction line: " << process.current_instruction() << endl;
             cout << "Lines of code: " << process.total_instructions() << endl;
         } else {
-            cout << "\nFinished!";
+            cout << "Finished!\n";
         }
     
         cout << "----------------------------------------\n";

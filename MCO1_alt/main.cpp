@@ -40,6 +40,8 @@ Scheduler scheduler(
     config.delays_per_exec
 );
 
+thread scheduler_thread;
+
 uint32_t cpu_cycles = 0;
 
 void screen(int pid) {
@@ -82,7 +84,7 @@ void start_scheduler() {
             scheduler.run_fcfs();
         }
         cpu_cycles++;
-
+        this_thread::sleep_for(chrono::milliseconds(5000));
     }
 
 }
@@ -149,7 +151,8 @@ int main() {
             getline(cin, dump);
         } else if (input == "scheduler-start") {
             cout << "Starting scheduler";
-            thread scheduler(start_scheduler);
+            scheduler_thread = thread(start_scheduler);
+            scheduler_thread.detach();
         } else if (input == "scheduler-stop") {
             cout << "Stopping scheduler";
         } else if (input == "report-util") {
