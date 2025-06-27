@@ -31,7 +31,7 @@ class Scheduler {
 
 public:
     Scheduler(map<int, Process>& processes, queue<int>& ready_queue, int num_cores, uint32_t time_quantum, uint32_t delay, uint32_t min_ins, uint32_t max_ins, uint32_t freq)
-    : processes(processes), ready_queue(ready_queue), time_quantum(time_quantum), delay(delay), min_ins(min_ins), max_ins(max_ins), freq(freq), first_run(true) {
+    : processes(processes), ready_queue(ready_queue), time_quantum(time_quantum), cores(num_cores), delay(delay), min_ins(min_ins), max_ins(max_ins), freq(freq), first_run(true) {
         for (int i = 0; i < num_cores; ++i)
             cores[i] = Core{i, -1, 0, 0};
     }
