@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <map>
+#include <set>
 
 #include "Process.h"
 
@@ -20,11 +21,15 @@ class Scheduler {
     uint32_t time_quantum;
     uint32_t delay;
 
+    mutable mutex mtx;
+
 public:
     Scheduler(map<int, Process>& processes, queue<int>& ready_queue, int num_cores, uint32_t time_quantum, uint32_t delay)
         : processes(processes), ready_queue(ready_queue), cores(num_cores, Core{-1, 0, 0}), time_quantum(time_quantum), delay(delay), first_run(true) {}
 
     void run_rr() {
+
+        lock_guard<mutex> lock(mtx);
 
         // On the first run, we need to populate the cores with processes first.
         if (first_run) {
@@ -69,6 +74,8 @@ public:
 
     void run_fcfs() {
 
+        lock_guard<mutex> lock(mtx);
+
         if (first_run) {
             for (Core& core : cores) {
                 assign_next_process(core);
@@ -98,6 +105,79 @@ public:
                 assign_next_process(core);
             }
         }
+    }
+
+    void print_process_summary() const {
+
+        lock_guard<mutex> lock(mtx);
+
+        set<int> running_pids;
+        set<int> waiting_pids;
+        queue<int> temp_queue = ready_queue;
+
+        for (const auto& core : cores)
+            if (core.pid != -1)
+                running_pids.insert(core.pid);
+
+        while (!temp_queue.empty()) {
+            waiting_pids.insert(temp_queue.front());
+            temp_queue.pop();
+        }
+
+        cout << "\nRunning Processes:\n";
+        for (int pid : running_pids)
+            cout << "process_" << pid << "\n";
+
+        cout << "\nWaiting Processes:\n";
+        for (int pid : waiting_pids)
+            if (running_pids.count(pid) == 0)
+                cout << "process_" << pid << "\n";
+
+        cout << "\nFinished Processes:\n";
+        for (const auto& [pid, process] : processes)
+            if (process.is_done() && !running_pids.count(pid) && !waiting_pids.count(pid))
+                cout << "process_" << pid << "\n";
+
+        cout << endl;
+    }
+
+    void print_process_summary_to_file(const string& filename = "csopesy_log.txt") const {
+        lock_guard<mutex> lock(mtx);
+
+        ofstream out(filename);
+        if (!out.is_open()) {
+            cerr << "Failed to open file: " << filename << "\n";
+            return;
+        }
+
+        set<int> running_pids;
+        set<int> waiting_pids;
+        queue<int> temp_queue = ready_queue;
+
+        for (const auto& core : cores)
+            if (core.pid != -1)
+                running_pids.insert(core.pid);
+
+        while (!temp_queue.empty()) {
+            waiting_pids.insert(temp_queue.front());
+            temp_queue.pop();
+        }
+
+        out << "\nRunning Processes:\n";
+        for (int pid : running_pids)
+            out << "process_" << pid << "\n";
+
+        out << "\nWaiting Processes:\n";
+        for (int pid : waiting_pids)
+            if (running_pids.count(pid) == 0)
+                out << "process_" << pid << "\n";
+
+        out << "\nFinished Processes:\n";
+        for (const auto& [pid, process] : processes)
+            if (process.is_done() && !running_pids.count(pid) && !waiting_pids.count(pid))
+                out << "process_" << pid << "\n";
+
+        out << endl;
     }
 
 private:

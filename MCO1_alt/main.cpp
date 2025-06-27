@@ -50,10 +50,6 @@ void start_scheduler() {
     
     while (true) {
 
-        if (cpu_cycles % config.delays_per_exec) {
-
-        }
-
         if (config.scheduler == "rr") {
             scheduler.run_rr();
         } else {
@@ -101,13 +97,21 @@ int main() {
         } else if (regex_match(input, match, regex(R"(screen -r (\w+))"))) {
             cout << match[1];
         } else if (input == "screen -ls") {
-            cout << "Listing all processes";
+            scheduler.print_process_summary();
+            cout << "Press Enter to continue...";
+            cin.ignore();
+            cin.get();
         } else if (input == "scheduler-start") {
             cout << "Starting scheduler";
+            thread scheduler(start_scheduler);
         } else if (input == "scheduler-stop") {
             cout << "Stopping scheduler";
         } else if (input == "report-util") {
-            cout << "Report";
+            scheduler.print_process_summary_to_file();
+            cout << "Summary written to process_summary.txt\n";
+            cout << "Press Enter to continue...";
+            cin.ignore();
+            cin.get();
         } else if (input == "exit") {
             break;  
         } else {
