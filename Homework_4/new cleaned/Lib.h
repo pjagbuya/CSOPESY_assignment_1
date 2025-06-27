@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <fstream>
 using namespace std;
 
 #define SLEEP_TIME 20
