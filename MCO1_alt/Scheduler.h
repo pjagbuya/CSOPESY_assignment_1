@@ -375,7 +375,6 @@ private:
     }
         
     void create_random_process() {
-        lock_guard<mutex> lock(mtx);
         int pid = process_counter++;
 
         while(processes.count(pid)) {
@@ -387,7 +386,7 @@ private:
         
         int ins_ctr = 0;
         while (ins_ctr < num_instructions) {
-            int type = 0 + rand() % 5;
+            int type = rand() % 5;
 
             switch(type) {
                 case 0: 
