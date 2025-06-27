@@ -44,6 +44,32 @@ uint32_t cpu_cycles = 0;
 
 void screen(int pid) {
 
+    while(true) {
+
+        system("cls");
+        cow();
+
+        scheduler.process_smi(pid);
+
+        cout << "Input command: ";
+        string input;
+        string dump;
+        getline(cin, input);
+
+        if (input == "process-smi") {
+            system("cls");
+            cow();
+            scheduler.process_smi(pid);
+        } else if (input == "exit") {
+            break;
+        } else {
+            cout << "Command not recognized...\n";
+        }
+
+        cout << "Press Enter to continue...";
+        getline(cin, dump);
+
+    }
 }
 
 void start_scheduler() {
@@ -65,6 +91,7 @@ int main() {
     
     string input;
     smatch match;
+    string dump;
 
     while(true) {
         system("cls");
@@ -92,15 +119,34 @@ int main() {
         cout << "Input command: ";
         getline(cin, input);
 
-        if (regex_match(input, match, regex(R"(screen -s (\w+))"))) {
-            cout << match[1];
-        } else if (regex_match(input, match, regex(R"(screen -r (\w+))"))) {
-            cout << match[1];
+        if (regex_match(input, match, regex(R"(screen -s (process_(\d+)))"))) {
+            int pid = stoi(match[2]);
+            if (scheduler.has_process(pid)) {
+                cout << "Process already exists. Try screen -r process_" << pid << endl;
+                cout << "Press Enter to continue...";
+                getline(cin, dump);
+            } else {
+                if (scheduler.screen_create(pid)) {
+                    screen(pid);
+                } else {
+                    cout << "Process already exists. Try screen -r process_" << pid << endl;
+                    cout << "Press Enter to continue...";
+                    getline(cin, dump);
+                }
+            }
+        } else if (regex_match(input, match, regex(R"(screen -r (process_(\d+)))"))) {
+            int pid = stoi(match[2]);
+            if (scheduler.has_process(pid)) {
+                screen(pid);
+            } else {
+                cout << "Process does not exist...\n";
+                cout << "Press Enter to continue...";
+                getline(cin, dump);
+            }
         } else if (input == "screen -ls") {
             scheduler.print_process_summary();
             cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
+            getline(cin, dump);
         } else if (input == "scheduler-start") {
             cout << "Starting scheduler";
             thread scheduler(start_scheduler);
@@ -108,14 +154,15 @@ int main() {
             cout << "Stopping scheduler";
         } else if (input == "report-util") {
             scheduler.print_process_summary_to_file();
-            cout << "Summary written to process_summary.txt\n";
+            cout << "Summary written to csopesy_log.txt\n";
             cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
+            getline(cin, dump);
         } else if (input == "exit") {
             break;  
         } else {
-            cout << "Command not recognized...";
+            cout << "Command not recognized...\n";
+            cout << "Press Enter to continue...";
+            getline(cin, dump);
         }
 
     }
@@ -123,25 +170,25 @@ int main() {
     return 0;
 }
 
-Config read_config(const std::string& filename) {
+Config read_config(const string& filename) {
     Config config;
-    std::ifstream file(filename);
-    std::string key;
-    std::string value;
+    ifstream file(filename);
+    string key;
+    string value;
 
-    std::unordered_map<std::string, std::string> kv;
+    unordered_map<string, string> kv;
 
     while (file >> key >> value) {
         kv[key] = value;
     }
 
-    config.num_cpu = std::stoi(kv["num-cpu"]);
+    config.num_cpu = stoi(kv["num-cpu"]);
     config.scheduler = kv["scheduler"];
-    config.quantum_cycles = std::stoul(kv["quantum-cycles"]);
-    config.batch_process_freq = std::stoul(kv["batch-process-freq"]);
-    config.min_ins = std::stoul(kv["min-ins"]);
-    config.max_ins = std::stoul(kv["max-ins"]);
-    config.delays_per_exec = std::stoul(kv["delays-per-exec"]);
+    config.quantum_cycles = stoul(kv["quantum-cycles"]);
+    config.batch_process_freq = stoul(kv["batch-process-freq"]);
+    config.min_ins = stoul(kv["min-ins"]);
+    config.max_ins = stoul(kv["max-ins"]);
+    config.delays_per_exec = stoul(kv["delays-per-exec"]);
 
     return config;
 }

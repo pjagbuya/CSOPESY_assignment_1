@@ -21,6 +21,8 @@ class Scheduler {
     uint32_t time_quantum;
     uint32_t delay;
 
+    uint32_t process_counter = 0;
+
     mutable mutex mtx;
 
 public:
@@ -57,7 +59,7 @@ public:
                     continue;
                 }
 
-                process.tick();
+                process.tick(core.pid);
                 core.time_quantum++;
 
                 if (process.is_done()) {
@@ -93,7 +95,7 @@ public:
                     continue;
                 }
                 
-                process.tick();
+                process.tick(core.pid);
 
                 if (process.is_done()) {
                     core.pid = -1;
@@ -107,6 +109,56 @@ public:
         }
     }
 
+    bool has_process(int pid) const {
+        lock_guard<std::mutex> lock(mtx);
+        return processes.count(pid) > 0;
+    }
+
+    bool screen_create(int pid) {
+        lock_guard<std::mutex> lock(mtx);
+
+        if (processes.count(pid) > 0) {
+            return false;
+        }
+
+        vector<string> dummy_program = {
+            "PRINT()",
+            "PRINT()",
+            "PRINT()"
+        };
+        
+        processes.emplace(pid, Process(pid, dummy_program));
+        ready_queue.push(pid);
+        return true;
+
+    }
+
+    void process_smi(int pid) const {
+        lock_guard<mutex> lock(mtx);
+
+        if (!processes.count(pid)) {
+            cout << "process_" << pid << " not found.\n";
+            return;
+        }
+
+        const Process& process = processes.at(pid);
+
+        cout << "----------------------------------------\n";
+        cout << "Process name: " << "process_" << pid << endl;
+        cout << "ID: " << pid << endl;
+        cout << "Logs: \n";
+        process.print_output();
+
+        if (!process.is_done()) {       
+            cout << "\nCurrent instruction line: " << process.current_instruction() << endl;
+            cout << "Lines of code: " << process.total_instructions() << endl;
+        } else {
+            cout << "\nFinished!";
+        }
+    
+        cout << "----------------------------------------\n";
+    }
+
     void print_process_summary() const {
         lock_guard<mutex> lock(mtx);
 
@@ -118,6 +170,21 @@ public:
             temp_queue.pop();
         }
 
+        int used_cores = 0;
+        for (const auto& core : cores) {
+            if (core.pid != -1)
+                used_cores++;
+        }
+
+        int total_cores = cores.size();
+        int idle_cores = total_cores - used_cores;
+        int utilization_percent = (total_cores == 0) ? 0 : (used_cores * 100) / total_cores;
+
+        cout << "\nCPU Utilization:\t" << utilization_percent << "%\n";
+        cout << "Cores used:\t\t" << used_cores << "\n";
+        cout << "Cores available:\t" << idle_cores << "\n\n";
+
+        cout << "----------------------------------------";
         cout << "\nRunning processes:\n";
         for (int i = 0; i < cores.size(); ++i) {
             const Core& core = cores[i];
@@ -152,6 +219,7 @@ public:
             }
         }
 
+        cout << "----------------------------------------\n";
         cout << endl;
     }
 
@@ -173,6 +241,21 @@ public:
             temp_queue.pop();
         }
 
+        int used_cores = 0;
+        for (const auto& core : cores) {
+            if (core.pid != -1)
+                used_cores++;
+        }
+
+        int total_cores = cores.size();
+        int idle_cores = total_cores - used_cores;
+        int utilization_percent = (total_cores == 0) ? 0 : (used_cores * 100) / total_cores;
+
+        out << "\nCPU Utilization:\t" << utilization_percent << "%\n";
+        out << "Cores used:\t\t" << used_cores << "\n";
+        out << "Cores available:\t" << idle_cores << "\n";
+
+        out << "----------------------------------------";
         out << "\nRunning processes:\n";
         for (int i = 0; i < cores.size(); ++i) {
             const Core& core = cores[i];
@@ -207,6 +290,7 @@ public:
             }
         }
 
+        out << "----------------------------------------\n";
         out << endl;
     }
 

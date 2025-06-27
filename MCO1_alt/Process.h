@@ -20,6 +20,7 @@ class Process {
     vector<string> instructions;
     int instruction_pointer = 0;
     int sleep_ticks = 0;
+    int core = -1;
 
     chrono::system_clock::time_point timestamp;
 
@@ -32,7 +33,10 @@ public:
         }
     }
 
-    bool tick() {
+    bool tick(int core) {
+
+        this->core = core; // OMG
+
         if (sleep_ticks > 0) {
             --sleep_ticks;
             return false; // Skipping execution due to sleep
@@ -142,8 +146,12 @@ private:
                 }
             }
             buffer << result << endl;
-        } else if (msg.empty()) { 
-            buffer << "Hello world from " << "process_" << pid << "!" << endl;
+        } else if (msg.empty()) {
+            time_t t = chrono::system_clock::to_time_t(chrono::system_clock::now());
+            char buf[100];
+            strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", localtime(&t));
+
+            buffer << "(" << string(buf) << ") " << "Core:" << core << " Hello world from " << "process_" << pid << "!" << endl;
         } else {
             buffer << msg << endl;
         }
