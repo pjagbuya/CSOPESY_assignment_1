@@ -30,17 +30,20 @@ Config config = read_config("config.txt");
 
 map<int, Process> processes;
 queue<int> ready_queue;
-int num_processes = 0;
 
 Scheduler scheduler(
     processes,
     ready_queue,
     config.num_cpu,
     config.quantum_cycles,
-    config.delays_per_exec
+    config.delays_per_exec,
+    config.min_ins,
+    config.max_ins,
+    config.batch_process_freq
 );
 
 thread scheduler_thread;
+atomic<bool> scheduler_running = false;
 
 uint32_t cpu_cycles = 0;
 
@@ -79,12 +82,12 @@ void start_scheduler() {
     while (true) {
 
         if (config.scheduler == "rr") {
-            scheduler.run_rr();
+            scheduler.run_rr(cpu_cycles);
         } else {
-            scheduler.run_fcfs();
+            scheduler.run_fcfs(cpu_cycles);
         }
         cpu_cycles++;
-        this_thread::sleep_for(chrono::milliseconds(5000));
+        // this_thread::sleep_for(chrono::milliseconds(5000));
     }
 
 }
@@ -150,11 +153,14 @@ int main() {
             cout << "Press Enter to continue...";
             getline(cin, dump);
         } else if (input == "scheduler-start") {
-            cout << "Starting scheduler";
-            scheduler_thread = thread(start_scheduler);
-            scheduler_thread.detach();
+            if (!scheduler_running) {
+                scheduler_running = true;
+                scheduler_thread = thread(start_scheduler);
+                scheduler_thread.detach();
+            }
+            scheduler.start_process_generation();
         } else if (input == "scheduler-stop") {
-            cout << "Stopping scheduler";
+            scheduler.stop_process_generation();
         } else if (input == "report-util") {
             scheduler.print_process_summary_to_file();
             cout << "Summary written to csopesy_log.txt\n";

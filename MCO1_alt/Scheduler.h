@@ -19,21 +19,24 @@ class Scheduler {
     queue<int> ready_queue;
 
     bool first_run;
+    bool generate_processes = false;
+    uint32_t process_counter = 0;
     uint32_t time_quantum;
     uint32_t delay;
-
-    uint32_t process_counter = 0;
+    uint32_t min_ins;
+    uint32_t max_ins;
+    uint32_t freq;
 
     mutable mutex mtx;
 
 public:
-    Scheduler(map<int, Process>& processes, queue<int>& ready_queue, int num_cores, uint32_t time_quantum, uint32_t delay)
-    : processes(processes), ready_queue(ready_queue), cores(num_cores, Core{-1, 0, 0}), time_quantum(time_quantum), delay(delay), first_run(true) {
+    Scheduler(map<int, Process>& processes, queue<int>& ready_queue, int num_cores, uint32_t time_quantum, uint32_t delay, uint32_t min_ins, uint32_t max_ins, uint32_t freq)
+    : processes(processes), ready_queue(ready_queue), cores(num_cores, Core{-1, 0, 0}), time_quantum(time_quantum), delay(delay), min_ins(min_ins), max_ins(max_ins), freq(freq), first_run(true) {
         for (int i = 0; i < num_cores; ++i)
             cores[i] = Core{i, -1, 0, 0};
     }
 
-    void run_rr() {
+    void run_rr(uint32_t cpu_cycles) {
 
         lock_guard<mutex> lock(mtx);
 
@@ -76,9 +79,13 @@ public:
                 assign_next_process(core);
             }
         }
+
+        if (generate_processes && (cpu_cycles % freq == 0)) {
+            create_random_process();
+        }
     }
 
-    void run_fcfs() {
+    void run_fcfs(uint32_t cpu_cycles) {
 
         lock_guard<mutex> lock(mtx);
 
@@ -111,11 +118,25 @@ public:
                 assign_next_process(core);
             }
         }
+
+        if (generate_processes && (cpu_cycles % freq == 0)) {
+            create_random_process();
+        }
     }
 
     bool has_process(int pid) const {
         lock_guard<std::mutex> lock(mtx);
         return processes.count(pid) > 0;
+    }
+
+    void start_process_generation() {
+        lock_guard<std::mutex> lock(mtx);
+        generate_processes = true;
+    }
+
+    void stop_process_generation() {
+        lock_guard<std::mutex> lock(mtx);
+        generate_processes = false;
     }
 
     bool screen_create(int pid) {
@@ -125,14 +146,42 @@ public:
             return false;
         }
 
-        vector<string> dummy_program = {
-            "PRINT()",
-            "PRINT()",
-            "PRINT()"
-        };
+        int num_instructions = min_ins + rand() % (max_ins - min_ins + 1);
+        vector<string> program;
         
-        processes.emplace(pid, Process(pid, dummy_program));
+        int ins_ctr = 0;
+        while (ins_ctr < num_instructions) {
+            int type = 0 + rand() % 5;
+
+            switch(type) {
+                case 0: 
+                    program.push_back("PRINT()"); 
+                    ins_ctr++; 
+                    break;
+                case 1: 
+                    program.push_back("DECLARE(x" + to_string(rand()%10) + ", " + to_string(rand()%100) + ")"); 
+                    ins_ctr++;
+                    break;
+                case 2: 
+                    program.push_back("SLEEP(" + to_string(rand()%3) + ")"); 
+                    ins_ctr++;
+                    break;
+                case 3: 
+                    if (ins_ctr + 6 > num_instructions) break;
+                    program.push_back(generate_simple_for_loop());
+                    ins_ctr += 6;
+                    break;
+                case 4: 
+                    if (ins_ctr + 10 > num_instructions) break;
+                    program.push_back(generate_nested_for_loop());
+                    ins_ctr += 10;
+                    break;
+            }
+        }
+
+        processes.emplace(pid, Process(pid, program));
         ready_queue.push(pid);
+        
         return true;
 
     }
@@ -315,6 +364,60 @@ private:
             core.time_quantum = 0;
             core.delay = delay;
         }
+    }
+
+    string generate_simple_for_loop() {
+        return "FOR([PRINT(); DECLARE(x1, 2)], 3)";
+    }
+
+    string generate_nested_for_loop() {
+        return "FOR([PRINT(); FOR([DECLARE(x2, 2); SLEEP(1)], 2)], 2)";
+    }
+        
+    void create_random_process() {
+        lock_guard<mutex> lock(mtx);
+        int pid = process_counter++;
+
+        while(processes.count(pid)) {
+            pid = process_counter++; // Loop until we don't have conflict anymore
+        }
+
+        int num_instructions = min_ins + rand() % (max_ins - min_ins + 1);
+        vector<string> program;
+        
+        int ins_ctr = 0;
+        while (ins_ctr < num_instructions) {
+            int type = 0 + rand() % 5;
+
+            switch(type) {
+                case 0: 
+                    program.push_back("PRINT()"); 
+                    ins_ctr++; 
+                    break;
+                case 1: 
+                    program.push_back("DECLARE(x" + to_string(rand()%10) + ", " + to_string(rand()%100) + ")"); 
+                    ins_ctr++;
+                    break;
+                case 2: 
+                    program.push_back("SLEEP(" + to_string(rand()%3) + ")"); 
+                    ins_ctr++;
+                    break;
+                case 3: 
+                    if (ins_ctr + 6 > num_instructions) break;
+                    program.push_back(generate_simple_for_loop());
+                    ins_ctr += 6;
+                    break;
+                case 4: 
+                    if (ins_ctr + 10 > num_instructions) break;
+                    program.push_back(generate_nested_for_loop());
+                    ins_ctr += 10;
+                    break;
+            }
+        }
+
+        processes.emplace(pid, Process(pid, program));
+        ready_queue.push(pid);
+
     }
 
 };
