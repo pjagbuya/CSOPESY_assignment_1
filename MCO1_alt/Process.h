@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 using namespace std;
 
@@ -20,10 +21,12 @@ class Process {
     int instruction_pointer = 0;
     int sleep_ticks = 0;
 
+    chrono::system_clock::time_point timestamp;
+
     ostringstream buffer;
 
 public:
-    Process(int pid, const vector<string>& program): pid(pid) {
+    Process(int pid, const vector<string>& program): pid(pid), timestamp(chrono::system_clock::now())  {
         for (const auto& line : program) {
             unroll_instruction(line, instructions);
         }
@@ -56,7 +59,18 @@ public:
         return instructions.size();
     }
 
-    void print_output() {
+    int current_instruction() const {
+        return instruction_pointer;
+    }
+
+    string arrival_time() const {
+        time_t t = chrono::system_clock::to_time_t(timestamp);
+        char buf[100];
+        strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", localtime(&t));
+        return string(buf);
+    }
+
+    void print_output() const {
         cout << buffer.str() << endl;
     }
 

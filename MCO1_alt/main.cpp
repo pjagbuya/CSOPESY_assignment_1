@@ -55,7 +55,7 @@ void start_scheduler() {
         } else {
             scheduler.run_fcfs();
         }
-        cpu_cycles++
+        cpu_cycles++;
 
     }
 

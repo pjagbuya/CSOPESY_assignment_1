@@ -108,38 +108,53 @@ public:
     }
 
     void print_process_summary() const {
-
         lock_guard<mutex> lock(mtx);
 
-        set<int> running_pids;
         set<int> waiting_pids;
         queue<int> temp_queue = ready_queue;
-
-        for (const auto& core : cores)
-            if (core.pid != -1)
-                running_pids.insert(core.pid);
 
         while (!temp_queue.empty()) {
             waiting_pids.insert(temp_queue.front());
             temp_queue.pop();
         }
 
-        cout << "\nRunning Processes:\n";
-        for (int pid : running_pids)
-            cout << "process_" << pid << "\n";
+        cout << "\nRunning processes:\n";
+        for (int i = 0; i < cores.size(); ++i) {
+            const Core& core = cores[i];
+            if (core.pid != -1) {
+                const Process& process = processes.at(core.pid);
+                cout << "process_" << core.pid << "\t"
+                        << "(" << process.arrival_time() << ")\t"
+                        << "Core " << i << "\t"
+                        << process.current_instruction() << "/" << process.total_instructions()
+                        << "\n";
+            }
+        }
 
-        cout << "\nWaiting Processes:\n";
-        for (int pid : waiting_pids)
-            if (running_pids.count(pid) == 0)
-                cout << "process_" << pid << "\n";
+        cout << "\nWaiting processes:\n";
+        for (int pid : waiting_pids) {
+            const Process& process = processes.at(pid);
+            cout << "process_" << pid << "\t"
+                    << "(" << process.arrival_time() << ")\t\t"
+                    << process.current_instruction() << "/" << process.total_instructions()
+                    << "\n";
+        }
 
-        cout << "\nFinished Processes:\n";
-        for (const auto& [pid, process] : processes)
-            if (process.is_done() && !running_pids.count(pid) && !waiting_pids.count(pid))
-                cout << "process_" << pid << "\n";
+        cout << "\nFinished processes:\n";
+        for (const auto& [pid, process] : processes) {
+            if (process.is_done() &&
+                !waiting_pids.count(pid) &&
+                none_of(cores.begin(), cores.end(), [&](const Core& c) { return c.pid == pid; })) {
+                cout << "process_" << pid << "\t"
+                        << "(" << process.arrival_time() << ")\t\t"
+                        << process.total_instructions() << "/" << process.total_instructions()
+                        << "\n";
+            }
+        }
 
         cout << endl;
     }
+
 
     void print_process_summary_to_file(const string& filename = "csopesy_log.txt") const {
         lock_guard<mutex> lock(mtx);
@@ -148,34 +163,49 @@ public:
         if (!out.is_open()) {
             cerr << "Failed to open file: " << filename << "\n";
             return;
-        }
+        }    
 
-        set<int> running_pids;
         set<int> waiting_pids;
         queue<int> temp_queue = ready_queue;
-
-        for (const auto& core : cores)
-            if (core.pid != -1)
-                running_pids.insert(core.pid);
 
         while (!temp_queue.empty()) {
             waiting_pids.insert(temp_queue.front());
             temp_queue.pop();
         }
 
-        out << "\nRunning Processes:\n";
-        for (int pid : running_pids)
-            out << "process_" << pid << "\n";
+        out << "\nRunning processes:\n";
+        for (int i = 0; i < cores.size(); ++i) {
+            const Core& core = cores[i];
+            if (core.pid != -1) {
+                const Process& process = processes.at(core.pid);
+                out << "process_" << core.pid << "\t"
+                        << "(" << process.arrival_time() << ")\t"
+                        << "Core " << i << "\t"
+                        << process.current_instruction() << "/" << process.total_instructions()
+                        << "\n";
+            }
+        }
 
-        out << "\nWaiting Processes:\n";
-        for (int pid : waiting_pids)
-            if (running_pids.count(pid) == 0)
-                out << "process_" << pid << "\n";
+        out << "\nWaiting processes:\n";
+        for (int pid : waiting_pids) {
+            const Process& process = processes.at(pid);
+            out << "process_" << pid << "\t"
+                    << "(" << process.arrival_time() << ")\t\t"
+                    << process.current_instruction() << "/" << process.total_instructions()
+                    << "\n";
+        }
 
-        out << "\nFinished Processes:\n";
-        for (const auto& [pid, process] : processes)
-            if (process.is_done() && !running_pids.count(pid) && !waiting_pids.count(pid))
-                out << "process_" << pid << "\n";
+        out << "\nFinished processes:\n";
+        for (const auto& [pid, process] : processes) {
+            if (process.is_done() &&
+                !waiting_pids.count(pid) &&
+                none_of(cores.begin(), cores.end(), [&](const Core& c) { return c.pid == pid; })) {
+                out << "process_" << pid << "\t"
+                        << "(" << process.arrival_time() << ")\t\t"
+                        << process.total_instructions() << "/" << process.total_instructions()
+                        << "\n";
+            }
+        }
 
         out << endl;
     }
