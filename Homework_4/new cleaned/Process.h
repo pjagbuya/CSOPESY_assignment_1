@@ -57,6 +57,8 @@ class Process {
             this->response_time = 0;
             this->wait_time = 0;
             this->time_finished = "";
+
+            this->screen.Initialize(pid);
         }
 
         const Screen& GetScreen() const { return this->screen; }
@@ -111,7 +113,7 @@ class Process {
 
         void Run() {
             if(this->status == "Run"){
-                this->screen.Run(this->print_output);
+                this->screen.Run(this->print_output, this->core_id);
                 this->current_burst_time--;
                 this->current_time_quantum++;
             }
@@ -131,6 +133,7 @@ class Process {
         }
 
         void Report() {
+            this->screen.ReportUtil(this->pid);
         }
 
         string ProcessInfo() {

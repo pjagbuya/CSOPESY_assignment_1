@@ -13,6 +13,7 @@ class OperatingSystem {
         Output output;
         bool is_initialized;
         bool is_quit;
+        bool is_scheduler_start;
         Screen screen;
 
     public:
@@ -68,10 +69,10 @@ class OperatingSystem {
 
         void KeyInput() {
             this->input.Run(this->console_manager.GetCurrentScreenId());
-
-            if(!this->input.GetCommandInterpreter().IsCommandExecuted()) {
+            CommandInterpreter command_interpreter = this->input.GetCommandInterpreter();
+            if(!command_interpreter.IsCommandExecuted()) {
                 vector<string> output_list;
-                switch(this->input.GetCommandInterpreter().GetAction()) {
+                switch(command_interpreter.GetAction()) {
                     case 0: // exit
                         this->is_quit = true;
                         break;
@@ -90,7 +91,7 @@ class OperatingSystem {
                         output_list.push_back(" ");
                         output_list.push_back("Running Processes: +  " + to_string(this->scheduler.GetCPU().GetCores().size()));
                         for (int i = 0; i < this->scheduler.GetCPU().GetCores().size(); i++) {
-                            shared_ptr<Process> process = this->scheduler.GetCPU().GetCore(i).GetProcess();
+                            shared_ptr<Process> process = this->scheduler.GetCPU().GetCoreAtIndex(i).GetProcess();
                             if (process) {
                                 output_list.push_back(process->ProcessInfo());
                             } else {
@@ -104,17 +105,14 @@ class OperatingSystem {
                         };
                         this->screen.SetOutputList(output_list);
                         break;
-                    case 4: // create
-                        for(int i = 0; i < stoi(this->input.GetCommandInterpreter()->GetMatch()[2]); i++) {
-                            shared_ptr<Process> process = make_shared<Process>("screen_" + to_string(i), "SRTF then RR at Time Slice " + to_string(i), 100);
-                            this->scheduler.PushReadyQueue(0, process);
-                        }
-                        this->screen.SetOutputList({"Processes created successfully.", "Waiting Processes: + " + to_string(this->scheduler.GetReadyQueue()[0].GetSize())});
-            
+                    case 4: // scheduler-start
+                        this->is_scheduler_start = true;
                         break;
                     case 5: // scheduler-stop
+                        this->is_scheduler_start = false;
                         break;
                     case 6: // report-util
+
                         break;
                     case 7: // ping
                         
@@ -124,7 +122,7 @@ class OperatingSystem {
                         system("cls");
                         break;
                     default:
-                        this->input.GetCommandInterpreter().SetAction(-2);
+                        command_interpreter.SetAction(-2);
                         break;
                 }
                 this->input.ResetCommandInterpreter();
@@ -139,9 +137,16 @@ class OperatingSystem {
         void ConsoleManage() {
             this->console_manager.Run(this->screen, this->input);
         }
-        
+
+        void SchedulerRandomizer(){
+            
+        }
+
         void Schedule() {
             this->scheduler.Run();
+            if(this->is_scheduler_start) {
+                this->SchedulerRandomizer();
+            }
         }
 
         void Shutdown() {

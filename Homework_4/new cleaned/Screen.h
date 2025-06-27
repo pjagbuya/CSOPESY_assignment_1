@@ -36,10 +36,23 @@ class Screen {
         }
 
         void Run(string output, int core_id = -1) {
-            //this->output_list.push_back("At time : " + this->GetTime() + " using core " + to_string(core_id) + " : " + output);
+            this->output_list.push_back("At time : " + this->GetTime() + " using core " + to_string(core_id) + " : " + output);
         }
 
-        void ReportUtil() {
+        void ReportUtil(string pid) {
 
+            string filename = "outputs\\report_" + pid + ".txt";
+
+            ofstream file(filename);
+            if (!file.is_open()) {
+                cerr << "Failed to open file: " << filename << endl;
+                return;
+            }
+
+            for (string line : this->output_list) {
+                file << line << endl;
+            }
+
+            file.close();
         }
 };
