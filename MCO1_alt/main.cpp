@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#ifndef CONFIG
+#define CONFIG
 struct Config {
     int num_cpu;
     string scheduler;
@@ -20,7 +22,12 @@ struct Config {
     uint32_t min_ins;
     uint32_t max_ins;
     uint32_t delays_per_exec;
+    uint32_t max_overall_mem;
+    uint32_t mem_per_frame;
+    uint32_t min_mem_per_proc;
+    uint32_t max_mem_per_proc;
 };
+#endif
 
 Config read_config(const std::string& filename);
 void cow_init();
@@ -34,12 +41,7 @@ queue<int> ready_queue;
 Scheduler scheduler(
     processes,
     ready_queue,
-    config.num_cpu,
-    config.quantum_cycles,
-    config.delays_per_exec,
-    config.min_ins,
-    config.max_ins,
-    config.batch_process_freq
+    config
 );
 
 thread scheduler_thread;
@@ -106,6 +108,9 @@ int main() {
 
         if (input == "initialize") {
             cout << "Initializing operating system...";
+            scheduler_running = true;
+            scheduler_thread = thread(start_scheduler);
+            scheduler_thread.detach();
             Sleep(1000);
             break;
         } else if (input == "exit") {
@@ -124,22 +129,22 @@ int main() {
         cout << "Input command: ";
         getline(cin, input);
 
-        if (regex_match(input, match, regex(R"(screen -s (process_(\d+)))"))) {
+        if (regex_match(input, match, regex(R"(screen -s (proc_(\d+)))"))) {
             int pid = stoi(match[2]);
             if (scheduler.has_process(pid)) {
-                cout << "Process already exists. Try screen -r process_" << pid << endl;
+                cout << "Process already exists. Try screen -r proc_" << pid << endl;
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             } else {
                 if (scheduler.screen_create(pid)) {
                     screen(pid);
                 } else {
-                    cout << "Process already exists. Try screen -r process_" << pid << endl;
+                    cout << "Process already exists. Try screen -r proc_" << pid << endl;
                     cout << "Press Enter to continue...";
                     getline(cin, dump);
                 }
             }
-        } else if (regex_match(input, match, regex(R"(screen -r (process_(\d+)))"))) {
+        } else if (regex_match(input, match, regex(R"(screen -r (proc_(\d+)))"))) {
             int pid = stoi(match[2]);
             if (scheduler.has_process(pid)) {
                 screen(pid);
@@ -148,7 +153,17 @@ int main() {
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             }
-        } else if (input == "screen -ls") {
+        } else if (regex_match(input, match, regex(R"(screen -c (proc_(\d+)) \"(.*)\")"))) {
+            int pid = stoi(match[2]);
+            if (!scheduler.has_process(pid)) {
+
+            } else {
+                cout << "Process already exists. Try screen -r proc_" << pid << endl;
+                cout << "Press Enter to continue...";
+                getline(cin, dump);
+            }
+        }
+        else if (input == "screen -ls") {
             scheduler.print_process_summary();
             cout << "Press Enter to continue...";
             getline(cin, dump);
@@ -158,9 +173,9 @@ int main() {
                 scheduler_thread = thread(start_scheduler);
                 scheduler_thread.detach();
             }
-            scheduler.start_process_generation();
+            // scheduler.start_process_generation();
         } else if (input == "scheduler-stop") {
-            scheduler.stop_process_generation();
+            // scheduler.stop_process_generation();
         } else if (input == "report-util") {
             scheduler.print_process_summary_to_file();
             cout << "Summary written to csopesy_log.txt\n";
@@ -198,6 +213,10 @@ Config read_config(const string& filename) {
     config.min_ins = stoul(kv["min-ins"]);
     config.max_ins = stoul(kv["max-ins"]);
     config.delays_per_exec = stoul(kv["delays-per-exec"]);
+    config.max_overall_mem = stoul(kv["max-overall-mem"]);
+    config.mem_per_frame = stoul(kv["mem-per-frame"]);
+    config.min_mem_per_proc = stoul(kv["min-mem-per-proc"]);
+    config.max_mem_per_proc = stoul(kv["max-mem-per-proc"]);
 
     return config;
 }

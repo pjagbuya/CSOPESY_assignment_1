@@ -6,6 +6,23 @@
 
 #include "Process.h"
 
+#ifndef CONFIG
+#define CONFIG
+struct Config {
+    int num_cpu;
+    string scheduler;
+    uint32_t quantum_cycles;
+    uint32_t batch_process_freq;
+    uint32_t min_ins;
+    uint32_t max_ins;
+    uint32_t delays_per_exec;
+    uint32_t max_overall_mem;
+    uint32_t mem_per_frame;
+    uint32_t min_mem_per_proc;
+    uint32_t max_mem_per_proc;
+};
+#endif 
+
 struct Core {
     int id;
     int pid;
@@ -17,22 +34,41 @@ class Scheduler {
     map<int, Process>& processes; 
     vector<Core> cores;
     queue<int> ready_queue;
+    map<string, int> custom_processes;
 
     bool first_run;
     bool generate_processes = false;
     uint32_t process_counter = 0;
     uint32_t time_quantum;
-    uint32_t delay;
+    uint32_t freq;
     uint32_t min_ins;
     uint32_t max_ins;
-    uint32_t freq;
+    uint32_t delay;
+
+    uint32_t max_overall_mem;
+    uint32_t mem_per_frame;
+    uint32_t min_mem_per_proc;
+    uint32_t max_mem_per_proc;
 
     mutable mutex mtx;
 
 public:
-    Scheduler(map<int, Process>& processes, queue<int>& ready_queue, int num_cores, uint32_t time_quantum, uint32_t delay, uint32_t min_ins, uint32_t max_ins, uint32_t freq)
-    : processes(processes), ready_queue(ready_queue), time_quantum(time_quantum), cores(num_cores), delay(delay), min_ins(min_ins), max_ins(max_ins), freq(freq), first_run(true) {
-        for (int i = 0; i < num_cores; ++i)
+    Scheduler(map<int, Process>& processes, queue<int>& ready_queue, Config config): 
+        processes(processes), 
+        ready_queue(ready_queue), 
+        cores(config.num_cpu), 
+        time_quantum(config.quantum_cycles), 
+        freq(config.batch_process_freq), 
+        min_ins(config.min_ins), 
+        max_ins(config.max_ins), 
+        delay(config.delays_per_exec), 
+        max_overall_mem(config.max_overall_mem),
+        mem_per_frame(config.mem_per_frame),
+        min_mem_per_proc(config.min_mem_per_proc),
+        max_mem_per_proc(config.max_mem_per_proc),
+        first_run(true) {
+
+        for (int i = 0; i < config.num_cpu; ++i)
             cores[i] = Core{i, -1, 0, 0};
     }
 
