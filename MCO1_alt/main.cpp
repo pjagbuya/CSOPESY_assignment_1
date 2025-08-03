@@ -108,9 +108,9 @@ int main() {
 
         if (input == "initialize") {
             cout << "Initializing operating system...";
-            scheduler_running = true;
-            scheduler_thread = thread(start_scheduler);
-            scheduler_thread.detach();
+            // scheduler_running = true;
+            // scheduler_thread = thread(start_scheduler);
+            // scheduler_thread.detach();
             Sleep(1000);
             break;
         } else if (input == "exit") {
@@ -129,22 +129,32 @@ int main() {
         cout << "Input command: ";
         getline(cin, input);
 
-        if (regex_match(input, match, regex(R"(screen -s (proc_(\d+)))"))) {
+        if (regex_match(input, match, regex(R"(screen -s (process_(\d+)) (\d+))"))) {
             int pid = stoi(match[2]);
+            int mem_size = stoi(match[3]);
+
             if (scheduler.has_process(pid)) {
-                cout << "Process already exists. Try screen -r proc_" << pid << endl;
+                cout << "Process already exists. Try screen -r process_" << pid << endl;
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             } else {
-                if (scheduler.screen_create(pid)) {
-                    screen(pid);
-                } else {
-                    cout << "Process already exists. Try screen -r proc_" << pid << endl;
-                    cout << "Press Enter to continue...";
+                if (mem_size < 64 || mem_size > 65536 || (mem_size & (mem_size - 1)) != 0) {
+                    cout << mem_size;
+                    cout << "Incorrect memory range" << endl;
+                    cout << "Press Enter to continue";
                     getline(cin, dump);
+                } else {
+                    if (scheduler.screen_create(pid)) {
+                        screen(pid);
+                    } else {
+                        cout << "Process already exists. Try screen -r process_" << pid << endl;
+                        cout << "Press Enter to continue...";
+                        getline(cin, dump);
+                    }
                 }
             }
-        } else if (regex_match(input, match, regex(R"(screen -r (proc_(\d+)))"))) {
+
+        } else if (regex_match(input, match, regex(R"(screen -r (process_(\d+)))"))) {
             int pid = stoi(match[2]);
             if (scheduler.has_process(pid)) {
                 screen(pid);
@@ -153,14 +163,45 @@ int main() {
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             }
-        } else if (regex_match(input, match, regex(R"(screen -c (proc_(\d+)) \"(.*)\")"))) {
+        } else if (regex_match(input, match, regex(R"(screen -c (process_(\d+)) (\d+) \"(.*)\")"))) {
             int pid = stoi(match[2]);
-            if (!scheduler.has_process(pid)) {
+            int mem_size = stoi(match[3]);
+            vector<string> program;
+            stringstream stream(match[4]);
+            string instruction;
 
-            } else {
-                cout << "Process already exists. Try screen -r proc_" << pid << endl;
+            while (getline(stream, instruction, ';')) {
+                instruction.erase(0, instruction.find_first_not_of(" \t\n\r"));
+                instruction.erase(instruction.find_last_not_of(" \t\n\r") + 1);
+                if (!instruction.empty()) {
+                    program.push_back(instruction);
+                }
+            }
+
+            for (auto& line : program) {
+                cout << line << endl;
+            }
+
+            getline(cin, dump);           
+
+            if (scheduler.has_process(pid)) {
+                cout << "Process already exists. Try screen -r process_" << pid << endl;
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
+            } else {
+                if (mem_size < 64 || mem_size > 65536 || (mem_size & (mem_size - 1)) != 0) {
+                    cout << "Incorrect memory range" << endl;
+                    cout << "Press Enter to continue";
+                    getline(cin, dump);
+                } else {
+                    if (scheduler.screen_custom(pid, program)) {
+                        screen(pid);
+                    } else {
+                        cout << "Process already exists. Try screen -r process_" << pid << endl;
+                        cout << "Press Enter to continue...";
+                        getline(cin, dump);
+                    }
+                }
             }
         }
         else if (input == "screen -ls") {

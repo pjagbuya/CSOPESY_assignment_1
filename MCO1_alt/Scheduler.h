@@ -34,7 +34,6 @@ class Scheduler {
     map<int, Process>& processes; 
     vector<Core> cores;
     queue<int> ready_queue;
-    map<string, int> custom_processes;
 
     bool first_run;
     bool generate_processes = false;
@@ -187,7 +186,7 @@ public:
         
         int ins_ctr = 0;
         while (ins_ctr < num_instructions) {
-            int type = 0 + rand() % 5;
+            int type = 0 + rand() % 7;
 
             switch(type) {
                 case 0: 
@@ -212,12 +211,30 @@ public:
                     program.push_back(generate_nested_for_loop());
                     ins_ctr += 10;
                     break;
+                case 5:
+                    break; // TODO
+                case 6:
+                    break; // TODO
             }
         }
 
         processes.emplace(pid, Process(pid, program));
         ready_queue.push(pid);
         
+        return true;
+
+    }
+
+    bool screen_custom(int pid, vector<string>& program) {
+        lock_guard<std::mutex> lock(mtx);
+
+        if (processes.count(pid) > 0) {
+            return false;
+        }
+
+        processes.emplace(pid, Process(pid, program));
+        ready_queue.push(pid);
+
         return true;
 
     }
@@ -422,7 +439,7 @@ private:
         
         int ins_ctr = 0;
         while (ins_ctr < num_instructions) {
-            int type = rand() % 5;
+            int type = rand() % 7;
 
             switch(type) {
                 case 0: 
@@ -447,6 +464,10 @@ private:
                     program.push_back(generate_nested_for_loop());
                     ins_ctr += 10;
                     break;
+                case 5:
+                    break; // TODO
+                case 6:
+                    break; // TODO
             }
         }
 

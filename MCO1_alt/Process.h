@@ -129,6 +129,10 @@ private:
             handle_subtract(match[1], match[2], match[3]);
         } else if (regex_match(line, match, regex(R"(SLEEP\((\d+)\))"))) {
             sleep_ticks = stoi(match[1]);
+        } else if (regex_match(line, match, regex(R"(READ)"))) {
+            // TODO
+        } else if (regex_match(line, match, regex(R"(WRITE)"))) {
+            // TODO
         }
     }
 
