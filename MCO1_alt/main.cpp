@@ -89,7 +89,7 @@ void start_scheduler() {
             scheduler.run_fcfs(cpu_cycles);
         }
         cpu_cycles++;
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        this_thread::sleep_for(chrono::milliseconds(250));
     }
 
 }
@@ -111,13 +111,13 @@ int main() {
             // scheduler_running = true;
             // scheduler_thread = thread(start_scheduler);
             // scheduler_thread.detach();
-            Sleep(1000);
+            Sleep(100);
             break;
         } else if (input == "exit") {
             return 0;
         } else {
             cout << "Command not recognized...";
-            Sleep(1000);
+            Sleep(100);
         }
 
     }
@@ -138,13 +138,13 @@ int main() {
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             } else {
-                if (mem_size < 64 || mem_size > 65536 || (mem_size & (mem_size - 1)) != 0) {
+                if (mem_size < 64 || mem_size > 65536 || mem_size > config.max_overall_mem || (mem_size & (mem_size - 1)) != 0) {
                     cout << mem_size;
                     cout << "Incorrect memory range" << endl;
                     cout << "Press Enter to continue";
                     getline(cin, dump);
                 } else {
-                    if (scheduler.screen_create(pid)) {
+                    if (scheduler.screen_create(pid, mem_size)) {
                         screen(pid);
                     } else {
                         cout << "Process already exists. Try screen -r process_" << pid << endl;
@@ -177,11 +177,12 @@ int main() {
                     program.push_back(instruction);
                 }
             }
-
+            cout << "Instructions: " << endl;
             for (auto& line : program) {
                 cout << line << endl;
             }
 
+            cout << "Press Enter to continue...";
             getline(cin, dump);           
 
             if (scheduler.has_process(pid)) {
@@ -189,12 +190,12 @@ int main() {
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             } else {
-                if (mem_size < 64 || mem_size > 65536 || (mem_size & (mem_size - 1)) != 0) {
+                if (mem_size < 64 || mem_size > 65536 || mem_size > config.max_overall_mem || (mem_size & (mem_size - 1)) != 0) {
                     cout << "Incorrect memory range" << endl;
                     cout << "Press Enter to continue";
                     getline(cin, dump);
                 } else {
-                    if (scheduler.screen_custom(pid, program)) {
+                    if (scheduler.screen_custom(pid, program, mem_size)) {
                         screen(pid);
                     } else {
                         cout << "Process already exists. Try screen -r process_" << pid << endl;
@@ -214,16 +215,28 @@ int main() {
                 scheduler_thread = thread(start_scheduler);
                 scheduler_thread.detach();
             }
-            // scheduler.start_process_generation();
+            scheduler.start_process_generation();
         } else if (input == "scheduler-stop") {
-            // scheduler.stop_process_generation();
+            scheduler.stop_process_generation();
         } else if (input == "report-util") {
             scheduler.print_process_summary_to_file();
             cout << "Summary written to csopesy_log.txt\n";
             cout << "Press Enter to continue...";
             getline(cin, dump);
+        } else if (input == "vmstat") {
+            scheduler.vmstat();
+            cout << "Press Enter to continue...";
+            getline(cin, dump);
         } else if (input == "exit") {
             break;  
+        } else if (input == "start") {
+            if (!scheduler_running) {
+                scheduler_running = true;
+                scheduler_thread = thread(start_scheduler);
+                scheduler_thread.detach();
+            }            
+        } else if (input == "stop") {
+            scheduler.stop_process_generation();
         } else {
             cout << "Command not recognized...\n";
             cout << "Press Enter to continue...";

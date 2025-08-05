@@ -28,7 +28,17 @@ struct Core {
     int pid;
     uint32_t time_quantum;
     uint32_t delay;
+    int status;
 };
+
+#ifndef PAGE
+#define PAGE
+struct Page {
+    int pid;
+    int page_number;
+    bool used_this_tick;
+};
+#endif 
 
 class Scheduler {
     map<int, Process>& processes; 
@@ -49,6 +59,15 @@ class Scheduler {
     uint32_t min_mem_per_proc;
     uint32_t max_mem_per_proc;
 
+    vector<Page> page_table;
+    vector<Page> pages;
+
+    uint32_t idle_ticks = 0;
+    uint32_t active_ticks = 0;
+
+    uint32_t paged_in = 0;
+    uint32_t paged_out = 0;
+
     mutable mutex mtx;
 
 public:
@@ -65,17 +84,21 @@ public:
         mem_per_frame(config.mem_per_frame),
         min_mem_per_proc(config.min_mem_per_proc),
         max_mem_per_proc(config.max_mem_per_proc),
+        page_table(config.max_overall_mem / config.mem_per_frame),
         first_run(true) {
 
         for (int i = 0; i < config.num_cpu; ++i)
-            cores[i] = Core{i, -1, 0, 0};
+            cores[i] = Core{i, -1, 0, 0, 0};
+        
+        for (int i = 0; i < config.max_overall_mem / config.mem_per_frame; ++i)
+            page_table[i] = Page{-1, -1, false};
+        
     }
 
     void run_rr(uint32_t cpu_cycles) {
 
         lock_guard<mutex> lock(mtx);
 
-        // On the first run, we need to populate the cores with processes first.
         if (first_run) {
             for (Core& core : cores) {
                 assign_next_process(core);
@@ -83,17 +106,16 @@ public:
             first_run = false;
         }
 
-        // Loop through the cores, execute the next instruction for each process, remove finished processes
-        // preempt processes exceeding time quantum, and assign new processes to each empty core.
         for (Core& core : cores) {
             if (core.pid != -1) {
                 Process& process = processes.at(core.pid);
 
-                // Check if core is delayed
                 if (core.delay > 0) {
-                    core.time_quantum++; // Increment time quantum of process and decrement delay
+                    core.time_quantum++;
                     core.delay--;
-                    // Remove process if it exceeded the time quantum
+                    core.status = 0;
+                    idle_ticks++;
+
                     if (core.time_quantum >= time_quantum) {
                         ready_queue.push(core.pid);
                         remove_and_assign(core);
@@ -101,18 +123,109 @@ public:
                     continue;
                 }
 
-                process.tick(core.id);
-                core.time_quantum++;
-
-                if (process.is_done()) {
-                    remove_and_assign(core);
-                } else if (core.time_quantum >= time_quantum) {
-                    ready_queue.push(core.pid);
-                    remove_and_assign(core);
+                // Check if first frame of process is in memory...
+                bool first_frame_in_mem = false;
+                for (int i = 0; i < page_table.size(); i++) {
+                    if (page_table[i].pid == core.pid && page_table[i].page_number == 0) {
+                        first_frame_in_mem = true;
+                        break;
+                    }
+                        
                 }
-            } else { // We probably shouldn't reach this ever since we assign a new process immediately after a core is emptied.  
+
+                // If not, check if we can swap...
+                if (!first_frame_in_mem) {
+                    for (int i = 0; i < page_table.size(); i++) {
+                        if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                            if (page_table[i].pid != -1) paged_out++;
+                            paged_in++;
+                            first_frame_in_mem = true;
+                            page_table[i].pid = core.pid;
+                            page_table[i].page_number = 0;
+                            page_table[i].used_this_tick = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!first_frame_in_mem) {
+                    core.status = 0;
+                    core.time_quantum++;
+                    idle_ticks++;
+                    if (core.time_quantum >= time_quantum) {
+                        ready_queue.push(core.pid);
+                        remove_and_assign(core);
+                    }
+                    continue;
+                }
+
+                bool only_first_page_used = true;
+                while (true) {
+                    int page_number_required = process.tick(core.id, page_table, only_first_page_used);
+
+                    if (page_number_required == -2) { // We crashed
+                        active_ticks++;
+                        remove_and_assign(core);
+                        break;
+                    } else if (page_number_required == -1) { // We successfully executed an instruction
+                        core.status = 1;
+                        core.time_quantum++;
+                        active_ticks++;
+                        if (only_first_page_used) { // We only used the first page
+                            for (int i = 0; i < page_table.size(); i++) {
+                                if (page_table[i].pid == core.pid && page_table[i].page_number == 0) {
+                                    page_table[i].used_this_tick = true;
+                                }
+                            }
+                        } else { // We used another page, READ and WRITE probably executed, also only 2 frames are needed for those instructions, the first page for instructions, and the second page for accessing the variable in the memory
+                            for (int i = 0; i < page_table.size(); i++) {
+                                if (page_table[i].pid == core.pid) {
+                                    page_table[i].used_this_tick = true;
+                                }
+                            }                            
+                        }
+                        
+                        if (process.is_done()) {
+                            remove_and_assign(core);
+                        } else if (core.time_quantum >= time_quantum) {
+                            ready_queue.push(core.pid);
+                            remove_and_assign(core);
+                        }
+                        break;
+                    } else { // We need a new frame
+                        bool swapped = false;
+                        for (int i = 0; i < page_table.size(); i++) {
+                            if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                                if (page_table[i].pid != -1) paged_out++;
+
+                                paged_in++;
+                                page_table[i].pid = core.pid;
+                                page_table[i].page_number = page_number_required;
+                                page_table[i].used_this_tick = true;
+                                swapped = true;
+                                break;
+                            }
+                        }
+                        if (!swapped) {
+                            core.status = 0;
+                            core.time_quantum++;
+                            idle_ticks++;
+                            if (core.time_quantum >= time_quantum) {
+                                ready_queue.push(core.pid);
+                                remove_and_assign(core);
+                            }
+                            break;
+                        }                   
+                    }
+                }
+            } else { 
                 assign_next_process(core);
             }
+        }
+
+        // Reset swapped already
+        for (int i = 0; i < page_table.size(); i++) {
+            page_table[i].used_this_tick = false;
         }
 
         if (generate_processes && (cpu_cycles % freq == 0)) {
@@ -129,7 +242,7 @@ public:
                 assign_next_process(core);
             }
             first_run = false;
-        } 
+        }
 
         for (Core& core : cores) {
             if (core.pid != -1) {
@@ -138,20 +251,107 @@ public:
 
                 if (core.delay > 0) {
                     core.delay--;
+                    core.status = 0;
+                    idle_ticks++;
                     continue;
                 }
                 
-                process.tick(core.id);
+                // Check if first frame of process is in memory...
+                bool first_frame_in_mem = false;
+                for (int i = 0; i < page_table.size(); i++) {
+                    if (page_table[i].pid == core.pid && page_table[i].page_number == 0) {
+                        first_frame_in_mem = true;
+                        break;
+                    }       
+                }
 
-                if (process.is_done()) {
-                    core.pid = -1;
-                    core.delay = delay;
-                    assign_next_process(core);
-                } 
+                // If not, check if we can swap...
+                if (!first_frame_in_mem) {
+                    for (int i = 0; i < page_table.size(); i++) {
+                        if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                            
+                            if (page_table[i].pid != -1) paged_out++;
+
+                            paged_in++;
+                            first_frame_in_mem = true;
+                            page_table[i].pid = core.pid;
+                            page_table[i].page_number = 0;
+                            page_table[i].used_this_tick = true;
+
+                            break;
+                        }
+                    }
+                }
+                
+                // If we failed to get the first frame, we move on to the next core
+                if (!first_frame_in_mem) {
+                    core.status = 0;
+                    idle_ticks++;
+                    continue;
+                }
+                
+                // Check if other pages needed 
+                bool only_first_page_used = true;
+                while (true) {
+                    int page_number_required = process.tick(core.id, page_table, only_first_page_used);
+
+                    if (page_number_required == -2) { // We crashed
+                        active_ticks++;
+                        remove_and_assign(core);
+                        break;
+                    } else if (page_number_required == -1) { // We successfully executed an instruction
+                        core.status = 1;
+                        active_ticks++;
+                        if (only_first_page_used) { // We only used the first page
+                            for (int i = 0; i < page_table.size(); i++) {
+                                if (page_table[i].pid == core.pid && page_table[i].page_number == 0) {
+                                    page_table[i].used_this_tick = true;
+                                }
+                            }
+                        } else { // We used another page, READ and WRITE probably executed, also only 2 frames are needed for those instructions, the first page for instructions, and the second page for accessing the variable in the memory
+                            for (int i = 0; i < page_table.size(); i++) {
+                                if (page_table[i].pid == core.pid) {
+                                    page_table[i].used_this_tick = true;
+                                }
+                            }                            
+                        }
+
+                        if (process.is_done()) {
+                            remove_and_assign(core);
+                        } 
+                        break;
+                    } else { // We need a new frame
+                        // throw runtime_error("Why is it trying to load this page: " + to_string(page_number_required));
+
+                        bool swapped = false;
+                        for (int i = 0; i < page_table.size(); i++) {
+                            if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                                if (page_table[i].pid != -1) paged_out++;
+
+                                paged_in++;
+                                page_table[i].pid = core.pid;
+                                page_table[i].page_number = page_number_required;
+                                page_table[i].used_this_tick = true;
+                                swapped = true;
+                                break;
+                            }
+                        }
+                        if (!swapped) {
+                            core.status = 0;
+                            idle_ticks++;
+                            break;
+                        }                   
+                    }
+                }
 
             } else {
                 assign_next_process(core);
             }
+        }
+
+        // Reset swapped already
+        for (int i = 0; i < page_table.size(); i++) {
+            page_table[i].used_this_tick = false;
         }
 
         if (generate_processes && (cpu_cycles % freq == 0)) {
@@ -174,7 +374,7 @@ public:
         generate_processes = false;
     }
 
-    bool screen_create(int pid) {
+    bool screen_create(int pid, int memory) {
         lock_guard<std::mutex> lock(mtx);
 
         if (processes.count(pid) > 0) {
@@ -218,22 +418,34 @@ public:
             }
         }
 
-        processes.emplace(pid, Process(pid, program));
+        processes.emplace(pid, Process(pid, program, memory, mem_per_frame));
         ready_queue.push(pid);
-        
+
+        int frame_count = (memory + mem_per_frame - 1) / mem_per_frame;
+
+        for (int i = 0; i < frame_count; i++) {
+            pages.push_back(Page{pid, i, false});
+        }
+
         return true;
 
     }
 
-    bool screen_custom(int pid, vector<string>& program) {
+    bool screen_custom(int pid, vector<string>& program, int memory) {
         lock_guard<std::mutex> lock(mtx);
 
         if (processes.count(pid) > 0) {
             return false;
         }
 
-        processes.emplace(pid, Process(pid, program));
+        processes.emplace(pid, Process(pid, program, memory, mem_per_frame));
         ready_queue.push(pid);
+
+        int frame_count = (memory + mem_per_frame - 1) / mem_per_frame;
+
+        for (int i = 0; i < frame_count; i++) {
+            pages.push_back(Page{pid, i, false});
+        }
 
         return true;
 
@@ -258,10 +470,43 @@ public:
         if (!process.is_done()) {       
             cout << "\nCurrent instruction line: " << process.current_instruction() << endl;
             cout << "Lines of code: " << process.total_instructions() << endl;
+        } else if (process.is_crashed()) {
+            cout << "Crashed!\n";
         } else {
             cout << "Finished!\n";
         }
     
+        cout << "----------------------------------------\n";
+    }
+
+    void vmstat() const {
+        lock_guard<mutex> lock(mtx);
+
+        uint32_t total_memory = max_overall_mem;
+        uint32_t frame_size = mem_per_frame;
+        uint32_t total_frames = total_memory / frame_size;
+
+        uint32_t used_memory = 0;
+        for (const auto& page : page_table) {
+            if (page.pid != -1)
+                used_memory += frame_size;
+        }
+
+        uint32_t free_memory = total_memory - used_memory;
+        uint32_t total_cpu_ticks = idle_ticks + active_ticks;
+
+        // Output the stats
+        cout << "----------------------------------------\n";
+        cout << "VMSTAT\n";
+        cout << "----------------------------------------\n";
+        cout << "Total memory:\t\t" << total_memory << " bytes\n";
+        cout << "Used memory:\t\t" << used_memory << " bytes\n";
+        cout << "Free memory:\t\t" << free_memory << " bytes\n";
+        cout << "Idle CPU ticks:\t\t" << idle_ticks << "\n";
+        cout << "Active CPU ticks:\t" << active_ticks << "\n";
+        cout << "Total CPU ticks:\t" << total_cpu_ticks << "\n";
+        cout << "Pages paged in:\t\t" << paged_in << "\n";
+        cout << "Pages paged out:\t" << paged_out << "\n";
         cout << "----------------------------------------\n";
     }
 
@@ -278,7 +523,7 @@ public:
 
         int used_cores = 0;
         for (const auto& core : cores) {
-            if (core.pid != -1)
+            if (core.pid != -1 && core.status == 1)
                 used_cores++;
         }
 
@@ -286,11 +531,37 @@ public:
         int idle_cores = total_cores - used_cores;
         int utilization_percent = (total_cores == 0) ? 0 : (used_cores * 100) / total_cores;
 
+        // Memory usage
+        uint32_t used_memory = 0;
+        int used_frames = 0;
+        for (const auto& page : page_table) {
+            if (page.pid != -1) {
+                used_memory += mem_per_frame;
+                used_frames++;
+            }
+        }
+
+        uint32_t total_memory = max_overall_mem;
+        int total_frames = total_memory / mem_per_frame;
+        int memory_util_percent = (total_memory == 0) ? 0 : (used_memory * 100) / total_memory;
+
         cout << "\nCPU Utilization:\t" << utilization_percent << "%\n";
         cout << "Cores used:\t\t" << used_cores << "\n";
         cout << "Cores available:\t" << idle_cores << "\n\n";
 
-        cout << "----------------------------------------";
+        cout << "Memory Usage:\t\t" << used_memory << " bytes / " << total_memory << " bytes\n";
+        cout << "Memory Utilization:\t" << memory_util_percent << "%\n\n";
+
+        cout << "Memory Frames:\t\t" << used_frames << " / " << total_frames << "\n";
+        for (int i = 0; i < page_table.size(); ++i) {
+            const auto& page = page_table[i];
+            if (page.pid != -1) {
+                cout << "Frame " << i << ": process_" << page.pid
+                    << "\tPage Number: " << page.page_number << "\n";
+            }
+        }
+
+        cout << "\n--------------------------------------------------------------------------------";
         cout << "\nRunning processes:\n";
         for (int i = 0; i < cores.size(); ++i) {
             const Core& core = cores[i];
@@ -299,8 +570,14 @@ public:
                 cout << "process_" << core.pid << "\t"
                         << "(" << process.arrival_time() << ")\t"
                         << "Core " << i << "\t"
-                        << process.current_instruction() << "/" << process.total_instructions()
-                        << "\n";
+                        << process.current_instruction() << "/" << process.total_instructions();
+
+                if (core.status == 0) {
+                    cout << "      \tIdle";
+                } else if (core.status == 1) {
+                    cout << "      \tExecuting";
+                }
+                cout << "\n";
             }
         }
 
@@ -325,10 +602,21 @@ public:
             }
         }
 
-        cout << "----------------------------------------\n";
+        cout << "\nCrashed processes:\n";
+        for (const auto& [pid, process] : processes) {
+            if (process.is_crashed() &&
+                !waiting_pids.count(pid) &&
+                none_of(cores.begin(), cores.end(), [&](const Core& c) { return c.pid == pid; })) {
+                cout << "process_" << pid << "\t"
+                        << "(" << process.arrival_time() << ")\t\t"
+                        << process.current_instruction() << "/" << process.total_instructions()
+                        << "\n";
+            }
+        }
+
+        cout << "--------------------------------------------------------------------------------\n";
         cout << endl;
     }
-
 
     void print_process_summary_to_file(const string& filename = "csopesy_log.txt") const {
         lock_guard<mutex> lock(mtx);
@@ -349,7 +637,7 @@ public:
 
         int used_cores = 0;
         for (const auto& core : cores) {
-            if (core.pid != -1)
+            if (core.pid != -1 && core.status == 1)
                 used_cores++;
         }
 
@@ -357,11 +645,37 @@ public:
         int idle_cores = total_cores - used_cores;
         int utilization_percent = (total_cores == 0) ? 0 : (used_cores * 100) / total_cores;
 
+        // Memory usage
+        uint32_t used_memory = 0;
+        int used_frames = 0;
+        for (const auto& page : page_table) {
+            if (page.pid != -1) {
+                used_memory += mem_per_frame;
+                used_frames++;
+            }
+        }
+
+        uint32_t total_memory = max_overall_mem;
+        int total_frames = total_memory / mem_per_frame;
+        int memory_util_percent = (total_memory == 0) ? 0 : (used_memory * 100) / total_memory;
+
         out << "\nCPU Utilization:\t" << utilization_percent << "%\n";
         out << "Cores used:\t\t" << used_cores << "\n";
-        out << "Cores available:\t" << idle_cores << "\n";
+        out << "Cores available:\t" << idle_cores << "\n\n";
 
-        out << "----------------------------------------";
+        out << "Memory Usage:\t\t" << used_memory << " bytes / " << total_memory << " bytes\n";
+        out << "Memory Utilization:\t" << memory_util_percent << "%\n\n";
+
+        out << "Memory Frames:\t\t" << used_frames << " / " << total_frames << "\n";
+        for (int i = 0; i < page_table.size(); ++i) {
+            const auto& page = page_table[i];
+            if (page.pid != -1) {
+                out << "Frame " << i << ": process_" << page.pid
+                    << "\tPage Number: " << page.page_number << "\n";
+            }
+        }
+
+        out << "\n----------------------------------------";
         out << "\nRunning processes:\n";
         for (int i = 0; i < cores.size(); ++i) {
             const Core& core = cores[i];
@@ -378,7 +692,7 @@ public:
         out << "\nWaiting processes:\n";
         for (int pid : waiting_pids) {
             const Process& process = processes.at(pid);
-            out << "process_" << pid << "\t"
+            cout << "process_" << pid << "\t"
                     << "(" << process.arrival_time() << ")\t\t"
                     << process.current_instruction() << "/" << process.total_instructions()
                     << "\n";
@@ -387,6 +701,18 @@ public:
         out << "\nFinished processes:\n";
         for (const auto& [pid, process] : processes) {
             if (process.is_done() &&
+                !waiting_pids.count(pid) &&
+                none_of(cores.begin(), cores.end(), [&](const Core& c) { return c.pid == pid; })) {
+                out << "process_" << pid << "\t"
+                        << "(" << process.arrival_time() << ")\t\t"
+                        << process.total_instructions() << "/" << process.total_instructions()
+                        << "\n";
+            }
+        }
+
+        out << "\nCrashed processes:\n";
+        for (const auto& [pid, process] : processes) {
+            if (process.is_crashed() &&
                 !waiting_pids.count(pid) &&
                 none_of(cores.begin(), cores.end(), [&](const Core& c) { return c.pid == pid; })) {
                 out << "process_" << pid << "\t"
@@ -406,6 +732,7 @@ private:
         core.pid = -1;
         core.time_quantum = 0;
         core.delay = delay;
+        core.status = 0;
         assign_next_process(core);
     }
 
@@ -416,6 +743,7 @@ private:
             core.pid = pid;
             core.time_quantum = 0;
             core.delay = delay;
+            core.status = 0;
         }
     }
 
@@ -471,8 +799,14 @@ private:
             }
         }
 
-        processes.emplace(pid, Process(pid, program));
+        processes.emplace(pid, Process(pid, program, min_mem_per_proc, mem_per_frame));
         ready_queue.push(pid);
+
+        int frame_count = (min_mem_per_proc + mem_per_frame - 1) / mem_per_frame;
+
+        for (int i = 0; i < frame_count; i++) {
+            pages.push_back(Page{pid, i, false});
+        }
 
     }
 
