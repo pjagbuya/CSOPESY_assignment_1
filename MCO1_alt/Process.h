@@ -13,46 +13,68 @@
 
 using namespace std;
 
+#ifndef PAGE
+#define PAGE
+struct Page {
+    int pid;
+    int page_number;
+    bool used_this_tick;
+};
+#endif 
+
 class Process {
 
     unordered_map<string, uint16_t> vars;
+    unordered_map<int, uint16_t> memory;
     int pid;
     vector<string> instructions;
     int instruction_pointer = 0;
     int sleep_ticks = 0;
     int core = -1;
+    bool crashed = false;
+
+    int mem_size;
+    int mem_per_frame;
 
     chrono::system_clock::time_point timestamp;
 
     ostringstream buffer;
 
 public:
-    Process(int pid, const vector<string>& program): pid(pid), timestamp(chrono::system_clock::now())  {
+    Process(int pid, const vector<string>& program, int mem_size, int mem_per_frame): pid(pid), timestamp(chrono::system_clock::now()), mem_size(mem_size), mem_per_frame(mem_per_frame)  {
         for (const auto& line : program) {
             unroll_instruction(line, instructions);
         }
     }
 
-    bool tick(int core) {
+    int tick(int core, vector<Page>& page_table, bool& only_first_page_used) {
 
         this->core = core; // OMG
 
         if (sleep_ticks > 0) {
             --sleep_ticks;
-            return false; // Skipping execution due to sleep
+            return -1; // Skipping execution due to sleep
         }
 
         if (instruction_pointer >= instructions.size()) {
-            return false; // No more instructions
+            return -1; // No more instructions
         }
 
-        execute(instructions[instruction_pointer]);
-        instruction_pointer++;
-        return true; // Instruction executed
+        int page_number_required = execute(instructions[instruction_pointer], page_table, only_first_page_used);
+
+        if (page_number_required == -1) {
+            instruction_pointer++;
+        }
+
+        return page_number_required; // -1, instruction executed, -2, crashed, otherwise, page_number_needed
     }
 
     bool is_done() const {
         return instruction_pointer >= instructions.size() && sleep_ticks == 0;
+    }
+
+    bool is_crashed() const {
+        return crashed;
     }
 
     bool is_sleeping() const {
@@ -117,7 +139,7 @@ private:
         }
     }    
 
-    void execute(const string& line) {
+    int execute(const string& line, vector<Page>& page_table, bool& only_first_page_used) {
         smatch match;
         if (regex_match(line, match, regex(R"(PRINT\((.*)\))"))) {
             handle_print(match[1]);
@@ -129,7 +151,62 @@ private:
             handle_subtract(match[1], match[2], match[3]);
         } else if (regex_match(line, match, regex(R"(SLEEP\((\d+)\))"))) {
             sleep_ticks = stoi(match[1]);
+        } else if (regex_match(line, match, regex(R"(READ\((\w+),\s*0x(\w+)\))"))) {
+            int address = stoi(match[2], nullptr, 16);
+
+            if (address >= mem_size) {
+                crashed = true;
+                time_t t = chrono::system_clock::to_time_t(chrono::system_clock::now());
+                char buf[100];
+                strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", localtime(&t));
+
+                buffer << "(" << string(buf) << ") " << "Core:" << core << " process_" << pid << " shut down due to memory access violation error." << " Read Memory address" << " 0x" << match[2] << " invalid." << endl;
+                return -2;
+            }
+
+            int page_number = address / mem_per_frame;
+
+            if (in_page_table(page_number, page_table)) {
+                vars[match[1]] = memory[address];
+                only_first_page_used = false;
+            } else {
+                return page_number;
+            }            
+
+        } else if (regex_match(line, match, regex(R"(WRITE\(0x(\w+),\s*(\w+)\))"))) {
+            int address = stoi(match[1], nullptr, 16);
+
+            if (address >= mem_size) {
+                crashed = true;
+                time_t t = chrono::system_clock::to_time_t(chrono::system_clock::now());
+                char buf[100];
+                strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", localtime(&t));
+
+                buffer << "(" << string(buf) << ") " << "Core:" << core << " process_" << pid << " shut down due to memory access violation error." << " Write Memory address" << " 0x" << match[1] << " invalid." << endl;
+                return -2;
+            }
+            
+            int page_number = address / mem_per_frame;
+
+            if (in_page_table(page_number, page_table)) {
+                memory[address] = get_value(match[2]);
+                only_first_page_used = false;
+            } else {
+                return page_number;
+            }
+
         }
+
+        return -1;
+    }
+
+    bool in_page_table(int page_number, vector<Page>& page_table) {
+        for (int i = 0; i < page_table.size(); i++) {
+            if (page_table[i].pid == pid && page_table[i].page_number == page_number)
+                return true;
+        }
+
+        return false;
     }
 
     void handle_print(const string& msg) {

@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#ifndef CONFIG
+#define CONFIG
 struct Config {
     int num_cpu;
     string scheduler;
@@ -20,7 +22,12 @@ struct Config {
     uint32_t min_ins;
     uint32_t max_ins;
     uint32_t delays_per_exec;
+    uint32_t max_overall_mem;
+    uint32_t mem_per_frame;
+    uint32_t min_mem_per_proc;
+    uint32_t max_mem_per_proc;
 };
+#endif
 
 Config read_config(const std::string& filename);
 void cow_init();
@@ -34,12 +41,7 @@ queue<int> ready_queue;
 Scheduler scheduler(
     processes,
     ready_queue,
-    config.num_cpu,
-    config.quantum_cycles,
-    config.delays_per_exec,
-    config.min_ins,
-    config.max_ins,
-    config.batch_process_freq
+    config
 );
 
 thread scheduler_thread;
@@ -87,7 +89,7 @@ void start_scheduler() {
             scheduler.run_fcfs(cpu_cycles);
         }
         cpu_cycles++;
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        this_thread::sleep_for(chrono::milliseconds(250));
     }
 
 }
@@ -106,13 +108,16 @@ int main() {
 
         if (input == "initialize") {
             cout << "Initializing operating system...";
-            Sleep(1000);
+            // scheduler_running = true;
+            // scheduler_thread = thread(start_scheduler);
+            // scheduler_thread.detach();
+            Sleep(100);
             break;
         } else if (input == "exit") {
             return 0;
         } else {
             cout << "Command not recognized...";
-            Sleep(1000);
+            Sleep(100);
         }
 
     }
@@ -124,21 +129,31 @@ int main() {
         cout << "Input command: ";
         getline(cin, input);
 
-        if (regex_match(input, match, regex(R"(screen -s (process_(\d+)))"))) {
+        if (regex_match(input, match, regex(R"(screen -s (process_(\d+)) (\d+))"))) {
             int pid = stoi(match[2]);
+            int mem_size = stoi(match[3]);
+
             if (scheduler.has_process(pid)) {
                 cout << "Process already exists. Try screen -r process_" << pid << endl;
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             } else {
-                if (scheduler.screen_create(pid)) {
-                    screen(pid);
-                } else {
-                    cout << "Process already exists. Try screen -r process_" << pid << endl;
-                    cout << "Press Enter to continue...";
+                if (mem_size < 64 || mem_size > 65536 || mem_size > config.max_overall_mem || (mem_size & (mem_size - 1)) != 0) {
+                    cout << mem_size;
+                    cout << "Incorrect memory range" << endl;
+                    cout << "Press Enter to continue";
                     getline(cin, dump);
+                } else {
+                    if (scheduler.screen_create(pid, mem_size)) {
+                        screen(pid);
+                    } else {
+                        cout << "Process already exists. Try screen -r process_" << pid << endl;
+                        cout << "Press Enter to continue...";
+                        getline(cin, dump);
+                    }
                 }
             }
+
         } else if (regex_match(input, match, regex(R"(screen -r (process_(\d+)))"))) {
             int pid = stoi(match[2]);
             if (scheduler.has_process(pid)) {
@@ -148,7 +163,49 @@ int main() {
                 cout << "Press Enter to continue...";
                 getline(cin, dump);
             }
-        } else if (input == "screen -ls") {
+        } else if (regex_match(input, match, regex(R"(screen -c (process_(\d+)) (\d+) \"(.*)\")"))) {
+            int pid = stoi(match[2]);
+            int mem_size = stoi(match[3]);
+            vector<string> program;
+            stringstream stream(match[4]);
+            string instruction;
+
+            while (getline(stream, instruction, ';')) {
+                instruction.erase(0, instruction.find_first_not_of(" \t\n\r"));
+                instruction.erase(instruction.find_last_not_of(" \t\n\r") + 1);
+                if (!instruction.empty()) {
+                    program.push_back(instruction);
+                }
+            }
+            cout << "Instructions: " << endl;
+            for (auto& line : program) {
+                cout << line << endl;
+            }
+
+            cout << "Press Enter to continue...";
+            getline(cin, dump);           
+
+            if (scheduler.has_process(pid)) {
+                cout << "Process already exists. Try screen -r process_" << pid << endl;
+                cout << "Press Enter to continue...";
+                getline(cin, dump);
+            } else {
+                if (mem_size < 64 || mem_size > 65536 || mem_size > config.max_overall_mem || (mem_size & (mem_size - 1)) != 0) {
+                    cout << "Incorrect memory range" << endl;
+                    cout << "Press Enter to continue";
+                    getline(cin, dump);
+                } else {
+                    if (scheduler.screen_custom(pid, program, mem_size)) {
+                        screen(pid);
+                    } else {
+                        cout << "Process already exists. Try screen -r process_" << pid << endl;
+                        cout << "Press Enter to continue...";
+                        getline(cin, dump);
+                    }
+                }
+            }
+        }
+        else if (input == "screen -ls") {
             scheduler.print_process_summary();
             cout << "Press Enter to continue...";
             getline(cin, dump);
@@ -166,8 +223,20 @@ int main() {
             cout << "Summary written to csopesy_log.txt\n";
             cout << "Press Enter to continue...";
             getline(cin, dump);
+        } else if (input == "vmstat") {
+            scheduler.vmstat();
+            cout << "Press Enter to continue...";
+            getline(cin, dump);
         } else if (input == "exit") {
             break;  
+        } else if (input == "start") {
+            if (!scheduler_running) {
+                scheduler_running = true;
+                scheduler_thread = thread(start_scheduler);
+                scheduler_thread.detach();
+            }            
+        } else if (input == "stop") {
+            scheduler.stop_process_generation();
         } else {
             cout << "Command not recognized...\n";
             cout << "Press Enter to continue...";
@@ -198,6 +267,10 @@ Config read_config(const string& filename) {
     config.min_ins = stoul(kv["min-ins"]);
     config.max_ins = stoul(kv["max-ins"]);
     config.delays_per_exec = stoul(kv["delays-per-exec"]);
+    config.max_overall_mem = stoul(kv["max-overall-mem"]);
+    config.mem_per_frame = stoul(kv["mem-per-frame"]);
+    config.min_mem_per_proc = stoul(kv["min-mem-per-proc"]);
+    config.max_mem_per_proc = stoul(kv["max-mem-per-proc"]);
 
     return config;
 }
