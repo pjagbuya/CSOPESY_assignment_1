@@ -1,0 +1,385 @@
+Process name: screen_3
+Created at: Sun Aug  3 21:36:54 2025
+
+At time : Sun Aug  3 21:36:54 2025 using core 3 : 0  DECLARE VAR_A  |  
+At time : Sun Aug  3 21:36:54 2025 using core 3 : 1  DECLARE VAR_B  |  
+At time : Sun Aug  3 21:36:54 2025 using core 3 : 2  VAR_A = 5  |  
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 3  VAR_B = 35  |  
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 4  PRINT VAR_A  |  5
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 5  PRINT VAR_B  |  35
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 6  DECLARE VAR_C = 3  |  
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 7  ADD VAR_C, VAR_A, VAR_B  |  
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 8  PRINT VAR_C  |  40
+At time : Sun Aug  3 21:36:55 2025 using core 3 : 9  FOR 5  |  
+At time : Sun Aug  3 21:36:55 2025 using core 1 : 10  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:55 2025 using core 1 : 11  FOR 35  |  
+At time : Sun Aug  3 21:36:55 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:55 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:55 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:55 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:56 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:57 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:58 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:58 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:58 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:36:59 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:00 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 14  PRINT VAR_C  |  76
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 15  END  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 10  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 11  FOR 35  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:01 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:02 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:02 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:03 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:04 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:05 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:05 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:05 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 14  PRINT VAR_C  |  112
+At time : Sun Aug  3 21:37:06 2025 using core 1 : 15  END  |  
+At time : Sun Aug  3 21:37:07 2025 using core 1 : 10  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:07 2025 using core 1 : 11  FOR 35  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:07 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:08 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:09 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:09 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:10 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:11 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:12 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 14  PRINT VAR_C  |  148
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 15  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 10  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 11  FOR 35  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:13 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:14 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:14 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:14 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:15 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:16 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:16 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:17 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 14  PRINT VAR_C  |  184
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 15  END  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 10  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 11  FOR 35  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:18 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:19 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:19 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:20 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:21 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:21 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:22 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:23 2025 using core 3 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:23 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:23 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 12  ADD VAR_C, VAR_C, 1  |  
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 13  END  |  
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 14  PRINT VAR_C  |  220
+At time : Sun Aug  3 21:37:24 2025 using core 1 : 15  END  |  
+At time : Sun Aug  3 21:37:24 2025 using core 3 : 16  PRINT VAR_C  |  220
+At time : Sun Aug  3 21:37:24 2025 using core 3 : 17  PRINT 'Process completed successfully.'  |  Process completed successfully.

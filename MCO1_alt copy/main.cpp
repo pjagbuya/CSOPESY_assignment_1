@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <map>
 #include <windows.h>
-#include <atomic>
 
 #include "Scheduler.h"
 
@@ -90,7 +89,7 @@ void start_scheduler() {
             scheduler.run_fcfs(cpu_cycles);
         }
         cpu_cycles++;
-        this_thread::sleep_for(chrono::milliseconds(100));
+        this_thread::sleep_for(chrono::milliseconds(250));
     }
 
 }
@@ -238,10 +237,6 @@ int main() {
             }            
         } else if (input == "stop") {
             scheduler.stop_process_generation();
-        } else if (input == "memlog") {
-            scheduler.MemoryLogOutput();
-            cout << "Press Enter to continue...";
-            getline(cin, dump);
         } else {
             cout << "Command not recognized...\n";
             cout << "Press Enter to continue...";
@@ -297,7 +292,7 @@ string cow_init = R"(CowOS v1.0 Preboot
 
 void cow() {
 
-string cow = R"(CowOS v1.0 Mooooo Ready
+string cow = R"(CowOS v1.0 Moolester Ready
 
             ^__^
             (oo)\_______
