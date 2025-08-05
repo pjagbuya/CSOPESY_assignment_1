@@ -3,6 +3,7 @@
 #include <queue>
 #include <map>
 #include <set>
+#include <unordered_set>
 
 #include "Process.h"
 
@@ -231,6 +232,8 @@ public:
         if (generate_processes && (cpu_cycles % freq == 0)) {
             create_random_process();
         }
+
+        backing_store();
     }
 
     void run_fcfs(uint32_t cpu_cycles) {
@@ -357,7 +360,41 @@ public:
         if (generate_processes && (cpu_cycles % freq == 0)) {
             create_random_process();
         }
+
+        backing_store();
     }
+
+    void backing_store() {
+
+        const string filename = "csopesy_backing_store.txt";
+        ofstream out(filename, ios::trunc);
+        if (!out.is_open()) {
+            cerr << "Failed to open file: " << filename << "\n";
+            return;
+        }
+
+        // 1) Build a set of (pid, page_number) pairs that are in memory
+        unordered_set<uint64_t> in_memory;
+        in_memory.reserve(page_table.size());
+        for (auto& frame : page_table) {
+            if (frame.pid != -1) {
+                // pack pid and page_number into one 64-bit key
+                uint64_t key = (uint64_t(frame.pid) << 32) | uint32_t(frame.page_number);
+                in_memory.insert(key);
+            }
+        }
+
+        // 2) For each page in your "pages" vector, if it's NOT in in_memory, write it out
+        for (auto& p : pages) {
+            uint64_t key = (uint64_t(p.pid) << 32) | uint32_t(p.page_number);
+            if (!in_memory.count(key)) {
+                out << "Process_" << p.pid
+                    << ";" << p.page_number
+                    << "\n";
+            }
+        }
+    }
+
 
     bool has_process(int pid) const {
         lock_guard<std::mutex> lock(mtx);
