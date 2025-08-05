@@ -137,7 +137,7 @@ public:
                 // If not, check if we can swap...
                 if (!first_frame_in_mem) {
                     for (int i = 0; i < page_table.size(); i++) {
-                        if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                        if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
                             if (page_table[i].pid != -1) paged_out++;
                             paged_in++;
                             first_frame_in_mem = true;
@@ -146,6 +146,20 @@ public:
                             page_table[i].used_this_tick = true;
                             break;
                         }
+                    }
+
+                    if (!first_frame_in_mem) {
+                        for (int i = 0; i < page_table.size(); i++) {
+                            if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                                if (page_table[i].pid != -1) paged_out++;
+                                paged_in++;
+                                first_frame_in_mem = true;
+                                page_table[i].pid = core.pid;
+                                page_table[i].page_number = 0;
+                                page_table[i].used_this_tick = true;
+                                break;
+                            }
+                        }   
                     }
                 }
 
@@ -196,7 +210,7 @@ public:
                     } else { // We need a new frame
                         bool swapped = false;
                         for (int i = 0; i < page_table.size(); i++) {
-                            if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                            if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
                                 if (page_table[i].pid != -1) paged_out++;
 
                                 paged_in++;
@@ -207,6 +221,22 @@ public:
                                 break;
                             }
                         }
+
+                        if (!swapped) {
+                            for (int i = 0; i < page_table.size(); i++) {
+                                if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
+                                    if (page_table[i].pid != -1) paged_out++;
+
+                                    paged_in++;
+                                    page_table[i].pid = core.pid;
+                                    page_table[i].page_number = page_number_required;
+                                    page_table[i].used_this_tick = true;
+                                    swapped = true;
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!swapped) {
                             core.status = 0;
                             core.time_quantum++;
@@ -271,6 +301,21 @@ public:
                 // If not, check if we can swap...
                 if (!first_frame_in_mem) {
                     for (int i = 0; i < page_table.size(); i++) {
+                        if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
+                            
+                            if (page_table[i].pid != -1) paged_out++;
+
+                            paged_in++;
+                            first_frame_in_mem = true;
+                            page_table[i].pid = core.pid;
+                            page_table[i].page_number = 0;
+                            page_table[i].used_this_tick = true;
+
+                            break;
+                        }
+                    }
+                    // If we cannot page an empty frame.
+                    for (int i = 0; i < page_table.size(); i++) {
                         if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
                             
                             if (page_table[i].pid != -1) paged_out++;
@@ -327,6 +372,20 @@ public:
                         // throw runtime_error("Why is it trying to load this page: " + to_string(page_number_required));
 
                         bool swapped = false;
+                        for (int i = 0; i < page_table.size(); i++) {
+                            if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
+                                if (page_table[i].pid != -1) paged_out++;
+
+                                paged_in++;
+                                page_table[i].pid = core.pid;
+                                page_table[i].page_number = page_number_required;
+                                page_table[i].used_this_tick = true;
+                                swapped = true;
+                                break;
+                            }
+                        }
+
+                        // Try to force a swap if memory is full
                         for (int i = 0; i < page_table.size(); i++) {
                             if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
                                 if (page_table[i].pid != -1) paged_out++;
@@ -563,7 +622,7 @@ public:
             if (core.pid != -1 && core.status == 1)
                 used_cores++;
         }
-
+        used_cores = cores.size();
         int total_cores = cores.size();
         int idle_cores = total_cores - used_cores;
         int utilization_percent = (total_cores == 0) ? 0 : (used_cores * 100) / total_cores;
@@ -610,7 +669,7 @@ public:
                         << process.current_instruction() << "/" << process.total_instructions();
 
                 if (core.status == 0) {
-                    cout << "      \tIdle";
+                    cout << "      \tExecuting";
                 } else if (core.status == 1) {
                     cout << "      \tExecuting";
                 }

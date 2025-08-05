@@ -89,7 +89,7 @@ void start_scheduler() {
             scheduler.run_fcfs(cpu_cycles);
         }
         cpu_cycles++;
-        this_thread::sleep_for(chrono::milliseconds(250));
+        this_thread::sleep_for(chrono::milliseconds(100));
     }
 
 }

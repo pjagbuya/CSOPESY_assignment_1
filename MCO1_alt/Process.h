@@ -301,36 +301,3 @@ private:
         return s.substr(1, s.size() - 2);
     }
 };
-
-// ===TEST===
-// int main() {
-//
-//     vector<string> program = {
-//         "DECLARE(var1, 5)",
-//         "ADD(var1, var1, 10)",
-//         "SUBTRACT(var1, var1, 3)",
-//         "PRINT(\"Value from: \" +var1)",
-//         "SLEEP(2)",
-//         "FOR([PRINT(\"Value from: \" +var1); SUBTRACT(var1, var1, 1);], 2)",
-//         "FOR([PRINT(\"Value from: \" +var1); ADD(var1, var1, 1); FOR([PRINT(\"Value from: \" +var1); SUBTRACT(var1, var1, 1);], 2);], 1)",
-//         "PRINT()",
-//     };
-//
-//     vector<string> program(100, "PRINT()");
-//    
-//     Interpreter interp("process_1", program);
-//
-//     cout << "Total instructions after unrolling: " << interp.total_instructions() << endl;
-//
-//     int tick = 0;
-//     while (!interp.is_done()) {
-//         cout << "Tick: " << tick << endl;
-//         interp.tick();
-//         tick++;
-//     }
-//
-//     interp.debug_dump();
-//
-//     return 0;
-//
-// }
