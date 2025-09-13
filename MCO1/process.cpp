@@ -6,13 +6,17 @@
 #include <array>
 using namespace std;
 
+#include "file.cpp"
+
 class Process{
 	private:
 		string name;
 		int core;
+		int pc;
 		string status;
 		int start_time;
 		int end_time;
+		File file;
 
 	public:
 		void SetName(string name) {
@@ -55,6 +59,14 @@ class Process{
 			return this->end_time;
 		}
 
+		void SetFile(const File& file) {
+			this->file = file;
+		}
+
+		File GetFile() {
+			return this->file;
+		}
+
 		Process(string name, int start_time){
 			this->name = name;
 			this->core = -1;
@@ -62,4 +74,11 @@ class Process{
 			this->start_time = start_time;
 		}
 		
+		void RandomizeProcess(int count) {
+			for (int i = 0; i < count; ++i) {
+				string hex_value = "0x" + to_string(rand() % 256); // Random hex value
+				Hex hex(hex_value);
+				this->file.AddInstruction(hex);
+			}
+		}
 };
