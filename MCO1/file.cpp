@@ -13,7 +13,7 @@ class File{
         vector<Hex> instruction;
 
     public:
-        File() {}
+        File() {} 
 
         void AddInstruction(const Hex& hex) {
             instruction.push_back(hex);
