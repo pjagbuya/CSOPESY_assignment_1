@@ -4,7 +4,6 @@
 #include <map>
 #include <set>
 #include <unordered_set>
-#include <mutex>
 
 #include "Process.h"
 
@@ -72,8 +71,6 @@ class Scheduler {
 
     mutable mutex mtx;
 
-    vector<string> memory_logs;
-
 public:
     Scheduler(map<int, Process>& processes, queue<int>& ready_queue, Config config): 
         processes(processes), 
@@ -99,18 +96,9 @@ public:
         
     }
 
-    void MemoryLogOutput() const {
-        cout << "Memory Log Output:\n";
-        for (const auto& log : memory_logs) {
-            cout << log << endl;
-        }
-    }
-
     void run_rr(uint32_t cpu_cycles) {
 
         lock_guard<mutex> lock(mtx);
-
-        memory_logs.push_back("Memory Log at cycle " + to_string(cpu_cycles) + ":");
 
         if (first_run) {
             for (Core& core : cores) {
@@ -121,12 +109,6 @@ public:
 
         for (Core& core : cores) {
             if (core.pid != -1) {
-                if (core.time_quantum >= time_quantum) {
-                    memory_logs.push_back("Core " + to_string(core.id) + " process " + to_string(core.pid) + " reached time quantum, moving back to ready queue.");
-                    ready_queue.push(core.pid);
-                    remove_and_assign(core);
-                }
-
                 Process& process = processes.at(core.pid);
 
                 if (core.delay > 0) {
@@ -135,10 +117,7 @@ public:
                     core.status = 0;
                     idle_ticks++;
 
-                    memory_logs.push_back("Core " + to_string(core.id) + " is idle due to delay. Time quantum: " + to_string(core.time_quantum));
-
                     if (core.time_quantum >= time_quantum) {
-                        memory_logs.push_back("Core " + to_string(core.id) + " reached time quantum, moving process " + to_string(core.pid) + " back to ready queue.");
                         ready_queue.push(core.pid);
                         remove_and_assign(core);
                     }
@@ -149,7 +128,6 @@ public:
                 bool first_frame_in_mem = false;
                 for (int i = 0; i < page_table.size(); i++) {
                     if (page_table[i].pid == core.pid && page_table[i].page_number == 0) {
-                        memory_logs.push_back("Core " + to_string(core.id) + " found first frame of process " + to_string(core.pid) + " in memory.");
                         first_frame_in_mem = true;
                         break;
                     }
@@ -159,9 +137,8 @@ public:
                 // If not, check if we can swap...
                 if (!first_frame_in_mem) {
                     for (int i = 0; i < page_table.size(); i++) {
-                        if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
+                        if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
                             if (page_table[i].pid != -1) paged_out++;
-                            memory_logs.push_back("Core " + to_string(core.id) + " swapped in process " + to_string(core.pid) + " into memory frame " + to_string(i) + ".");  
                             paged_in++;
                             first_frame_in_mem = true;
                             page_table[i].pid = core.pid;
@@ -170,29 +147,16 @@ public:
                             break;
                         }
                     }
-
-                    if (!first_frame_in_mem) {
-                        for (int i = 0; i < page_table.size(); i++) {
-                            if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
-                                if (page_table[i].pid != -1) paged_out++;
-                                paged_in++;
-                                first_frame_in_mem = true;
-                                page_table[i].pid = core.pid;
-                                page_table[i].page_number = 0;
-                                page_table[i].used_this_tick = true;
-                                break;
-                            }
-                        }   
-                    }
                 }
 
                 if (!first_frame_in_mem) {
-                    memory_logs.push_back("Core " + to_string(core.id) + " could not find a free frame for process " + to_string(core.pid) + ", going idle.");
                     core.status = 0;
-                    core.time_quantum = 0;
+                    core.time_quantum++;
                     idle_ticks++;
-                    ready_queue.push(core.pid);
-                    remove_and_assign(core);
+                    if (core.time_quantum >= time_quantum) {
+                        ready_queue.push(core.pid);
+                        remove_and_assign(core);
+                    }
                     continue;
                 }
 
@@ -201,12 +165,10 @@ public:
                     int page_number_required = process.tick(core.id, page_table, only_first_page_used);
 
                     if (page_number_required == -2) { // We crashed
-                        memory_logs.push_back("Core " + to_string(core.id) + " process " + to_string(core.pid) + " crashed.");
                         active_ticks++;
                         remove_and_assign(core);
                         break;
                     } else if (page_number_required == -1) { // We successfully executed an instruction
-                        memory_logs.push_back("Core " + to_string(core.id) + " process " + to_string(core.pid) + " executed an instruction successfully.");
                         core.status = 1;
                         core.time_quantum++;
                         active_ticks++;
@@ -217,7 +179,6 @@ public:
                                 }
                             }
                         } else { // We used another page, READ and WRITE probably executed, also only 2 frames are needed for those instructions, the first page for instructions, and the second page for accessing the variable in the memory
-                            memory_logs.push_back("Core " + to_string(core.id) + " process " + to_string(core.pid) + " used additional pages.");
                             for (int i = 0; i < page_table.size(); i++) {
                                 if (page_table[i].pid == core.pid) {
                                     page_table[i].used_this_tick = true;
@@ -226,17 +187,18 @@ public:
                         }
                         
                         if (process.is_done()) {
-                            memory_logs.push_back("Core " + to_string(core.id) + " process " + to_string(core.pid) + " is done.");
+                            remove_and_assign(core);
+                        } else if (core.time_quantum >= time_quantum) {
+                            ready_queue.push(core.pid);
                             remove_and_assign(core);
                         }
                         break;
                     } else { // We need a new frame
                         bool swapped = false;
-                        memory_logs.push_back("Core " + to_string(core.id) + " process " + to_string(core.pid) + " needs additional page: " + to_string(page_number_required));
                         for (int i = 0; i < page_table.size(); i++) {
-                            if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
+                            if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
                                 if (page_table[i].pid != -1) paged_out++;
-                                memory_logs.push_back("Core " + to_string(core.id) + " swapped in process " + to_string(core.pid) + " into memory frame " + to_string(i) + " for page number " + to_string(page_number_required) + ".");
+
                                 paged_in++;
                                 page_table[i].pid = core.pid;
                                 page_table[i].page_number = page_number_required;
@@ -245,29 +207,14 @@ public:
                                 break;
                             }
                         }
-
                         if (!swapped) {
-                            for (int i = 0; i < page_table.size(); i++) {
-                                if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
-                                    if (page_table[i].pid != -1) paged_out++;
-
-                                    paged_in++;
-                                    page_table[i].pid = core.pid;
-                                    page_table[i].page_number = page_number_required;
-                                    page_table[i].used_this_tick = true;
-                                    swapped = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!swapped) {
-                            memory_logs.push_back("Core " + to_string(core.id) + " could not swap in process " + to_string(core.pid) + " for page number " + to_string(page_number_required) + ", going idle.");
                             core.status = 0;
-                            core.time_quantum = 0;
+                            core.time_quantum++;
                             idle_ticks++;
-                            ready_queue.push(core.pid);
-                            remove_and_assign(core);
+                            if (core.time_quantum >= time_quantum) {
+                                ready_queue.push(core.pid);
+                                remove_and_assign(core);
+                            }
                             break;
                         }                   
                     }
@@ -275,10 +222,6 @@ public:
             } else { 
                 assign_next_process(core);
             }
-        }
-
-        for(auto core : cores) {
-            memory_logs.push_back("Core " + to_string(core.id) + " status: " + to_string(core.status) + ", PID: " + to_string(core.pid) + ", Time Quantum: " + to_string(core.time_quantum));
         }
 
         // Reset swapped already
@@ -327,21 +270,6 @@ public:
 
                 // If not, check if we can swap...
                 if (!first_frame_in_mem) {
-                    for (int i = 0; i < page_table.size(); i++) {
-                        if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
-                            
-                            if (page_table[i].pid != -1) paged_out++;
-
-                            paged_in++;
-                            first_frame_in_mem = true;
-                            page_table[i].pid = core.pid;
-                            page_table[i].page_number = 0;
-                            page_table[i].used_this_tick = true;
-
-                            break;
-                        }
-                    }
-                    // If we cannot page an empty frame.
                     for (int i = 0; i < page_table.size(); i++) {
                         if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
                             
@@ -399,20 +327,6 @@ public:
                         // throw runtime_error("Why is it trying to load this page: " + to_string(page_number_required));
 
                         bool swapped = false;
-                        for (int i = 0; i < page_table.size(); i++) {
-                            if (page_table[i].used_this_tick == false && page_table[i].pid == -1) {
-                                if (page_table[i].pid != -1) paged_out++;
-
-                                paged_in++;
-                                page_table[i].pid = core.pid;
-                                page_table[i].page_number = page_number_required;
-                                page_table[i].used_this_tick = true;
-                                swapped = true;
-                                break;
-                            }
-                        }
-
-                        // Try to force a swap if memory is full
                         for (int i = 0; i < page_table.size(); i++) {
                             if (page_table[i].used_this_tick == false && page_table[i].pid != core.pid) {
                                 if (page_table[i].pid != -1) paged_out++;
@@ -649,7 +563,7 @@ public:
             if (core.pid != -1 && core.status == 1)
                 used_cores++;
         }
-        used_cores = cores.size();
+
         int total_cores = cores.size();
         int idle_cores = total_cores - used_cores;
         int utilization_percent = (total_cores == 0) ? 0 : (used_cores * 100) / total_cores;
@@ -696,7 +610,7 @@ public:
                         << process.current_instruction() << "/" << process.total_instructions();
 
                 if (core.status == 0) {
-                    cout << "      \tExecuting";
+                    cout << "      \tIdle";
                 } else if (core.status == 1) {
                     cout << "      \tExecuting";
                 }
